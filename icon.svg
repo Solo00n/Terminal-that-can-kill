@@ -1,0 +1,45 @@
+<svg width="256" height="256" viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<pattern id="hazL" width="48" height="48" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+<rect width="48" height="48" fill="#f2c015"/><rect width="24" height="48" fill="#15130a"/>
+</pattern>
+<pattern id="hazR" width="48" height="48" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+<rect width="48" height="48" fill="#f2c015"/><rect width="24" height="48" fill="#15130a"/>
+</pattern>
+<pattern id="scan" width="8" height="8" patternUnits="userSpaceOnUse">
+<rect width="8" height="4" fill="#000000" opacity="0.20"/>
+</pattern>
+<clipPath id="scr"><rect x="152" y="174" width="376" height="252" rx="16"/></clipPath>
+</defs>
+
+<rect x="0" y="0" width="680" height="680" fill="#0a0d0a"/>
+<rect x="36" y="36" width="608" height="608" rx="76" fill="#0c110e" stroke="#1b221c" stroke-width="2"/>
+
+<rect x="322" y="468" width="36" height="48" fill="#191d1e"/>
+<polygon points="278,550 402,550 426,578 254,578" fill="#191d1e"/>
+<rect x="118" y="126" width="444" height="348" rx="36" fill="#262b2d" stroke="#0d1011" stroke-width="4"/>
+
+<rect x="152" y="174" width="376" height="252" rx="16" fill="#05160c"/>
+<g clip-path="url(#scr)">
+  <rect x="152" y="174" width="168" height="252" fill="url(#hazL)"/>
+  <rect x="360" y="174" width="168" height="252" fill="url(#hazR)"/>
+  <rect x="152" y="174" width="376" height="252" fill="url(#scan)"/>
+  <rect x="152" y="250" width="376" height="12" fill="#35e0e0" opacity="0.28"/>
+  <rect x="152" y="338" width="376" height="12" fill="#35e0e0" opacity="0.28"/>
+  <rect x="152" y="298" width="376" height="5" fill="#eafff0" opacity="0.5"/>
+  <g opacity="0.5">
+    <rect x="325" y="214" width="20" height="132" rx="5" fill="#35e0e0"/>
+    <rect x="325" y="358" width="20" height="24" rx="5" fill="#35e0e0"/>
+    <rect x="335" y="214" width="20" height="132" rx="5" fill="#ff3bd0"/>
+    <rect x="335" y="358" width="20" height="24" rx="5" fill="#ff3bd0"/>
+  </g>
+  <rect x="330" y="214" width="20" height="132" rx="5" fill="#ff2b3c"/>
+  <rect x="330" y="358" width="20" height="24" rx="5" fill="#ff2b3c"/>
+</g>
+
+<rect x="152" y="174" width="376" height="252" rx="16" fill="none" stroke="#1e7d3a" stroke-width="3"/>
+<rect x="146" y="168" width="388" height="264" rx="20" fill="none" stroke="#0e2c18" stroke-width="3"/>
+
+<circle cx="180" cy="452" r="7" fill="#4dff88"/>
+<circle cx="500" cy="452" r="7" fill="#4dff88"/>
+</svg>

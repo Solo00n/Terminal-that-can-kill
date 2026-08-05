@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- BepInEx 5 targets .NET Framework 4.x compatible runtime; netstandard2.1 is the
+         recommended target for Unity 2022 / Lethal Company mods. -->
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>Solon.TerminalThatCanKill</AssemblyName>
+    <Product>Terminal that can kill</Product>
+    <Authors>Solon</Authors>
+    <Version>1.0.9</Version>
+    <RootNamespace>LethalDoors</RootNamespace>
+
+    <!-- Generates the BepInEx PluginInfo class (PluginInfo.PLUGIN_GUID etc.). -->
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- Emit the dll straight into a BepInEx/plugins-friendly folder on build. -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+
+    <!-- CS0436: Krafs.Publicizer and MonoMod.Utils both define IgnoresAccessChecksToAttribute.
+         Harmless overlap; ours is used. Suppressed to keep the build output clean. -->
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- BepInEx + HarmonyX. BepInEx.Core pulls in HarmonyX (0Harmony) transitively. -->
+    <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Core" Version="5.*" />
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
+
+    <!-- Enables the Publicize="true" metadata below (exposes private game members). -->
+    <PackageReference Include="Krafs.Publicizer" Version="2.*" PrivateAssets="all" />
+
+    <!-- Unity engine reference assemblies matching Lethal Company's Unity version.
+         Must match the version required by LethalCompany.GameLibs.Steam (V81 -> 2022.3.62). -->
+    <PackageReference Include="UnityEngine.Modules" Version="2022.3.62" IncludeAssets="compile" PrivateAssets="all" />
+
+    <!--
+      Stubbed & PUBLICIZED game assemblies (Assembly-CSharp, Unity.Netcode, etc.).
+      Publicize="true" exposes private/internal members so we can call things like
+      Landmine.hasExploded or PlayerControllerB internals without reflection.
+
+      IMPORTANT: pin the Version to the game build you are compiling against.
+      For LC V81 use the matching GameLibs package version published on NuGet
+      (community "LethalCompany.GameLibs.Steam" mirrors each game build).
+    -->
+    <PackageReference Include="LethalCompany.GameLibs.Steam" Version="81.0.5-ngd.0" Publicize="true" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Copy the built plugin into a local test profile automatically (optional).
+       Set the property LC_PLUGINS to your BepInEx/plugins path to enable. -->
+  <Target Name="CopyToPlugins" AfterTargets="Build" Condition="'$(LC_PLUGINS)' != ''">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(LC_PLUGINS)\TerminalThatCanKill" />
+  </Target>
+
+</Project>

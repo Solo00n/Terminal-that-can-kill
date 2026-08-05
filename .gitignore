@@ -1,0 +1,12 @@
+# Build output
+bin/
+obj/
+
+# Local tooling
+.claude/
+.vs/
+*.user
+
+# Packaging / leftovers
+*.zip
+icon_source_64.png
