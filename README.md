@@ -1,4 +1,4 @@
-<img src="icon.png" alt="Terminal that can kill" width="84" align="left">
+<img src="icon.png" alt="Terminal that can kill" width="80">
 
 # <span style="color: #cc0000;">TERMINAL THAT CAN KILL</span>
 
@@ -6,8 +6,6 @@
 ![BepInEx](https://img.shields.io/badge/BepInEx-5.4.21%2B-cc0000?style=flat-square)
 ![Version](https://img.shields.io/badge/version-1.0.9-cc0000?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-cc0000?style=flat-square)
-
-<br clear="left">
 
 **Language / Язык:** [English](#english) · [Русский](#russian)
 
