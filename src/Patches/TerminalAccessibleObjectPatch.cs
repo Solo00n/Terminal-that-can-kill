@@ -45,8 +45,9 @@ namespace LethalDoors.Patches
                     ?? __instance.GetComponentInChildren<Turret>();
                 if (turret != null)
                 {
-                    RemoteControlManager.HandleTurret(turret);
-                    return false;
+                    // Returns false when it wants vanilla to run (TurretAlwaysBerserk = false
+                    // and the error roll failed), so the turret is simply disabled as usual.
+                    return !RemoteControlManager.HandleTurret(turret);
                 }
             }
             catch (Exception e)

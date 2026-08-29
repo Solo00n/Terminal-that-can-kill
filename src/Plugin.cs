@@ -17,7 +17,7 @@ namespace LethalDoors
     {
         public const string PluginGuid = "Solon.TerminalThatCanKill";
         public const string PluginName = "Terminal that can kill";
-        public const string PluginVersion = "1.0.9";
+        public const string PluginVersion = "1.1.0";
 
         public static Plugin Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }

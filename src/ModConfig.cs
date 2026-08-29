@@ -47,6 +47,7 @@ namespace LethalDoors
         public readonly ConfigEntry<float> TurretErrorChance;
         public readonly ConfigEntry<float> MineErrorDamageMultiplier;
         public readonly ConfigEntry<float> TurretRampageDuration;
+        public readonly ConfigEntry<bool> TurretAlwaysBerserk;
         public readonly ConfigEntry<bool> TurretFlipOnBerserkExit;
         public readonly ConfigEntry<float> TurretFlipSmoothDuration;
 
@@ -127,15 +128,22 @@ namespace LethalDoors
                     new AcceptableValueRange<float>(0f, 1f)));
 
             TurretErrorChance = cfg.Bind("RemoteControl", "TurretErrorChance", 0.15f,
-                new ConfigDescription("Chance (0..1) that a remote TURRET command critically malfunctions (sustained rampage).",
+                new ConfigDescription("Chance (0..1) that a remote TURRET command critically malfunctions (sustained rampage). " +
+                    "NOTE: with TurretAlwaysBerserk = true the turret goes berserk on EVERY command by design and this " +
+                    "chance only decides whether the rampage is extended. Set TurretAlwaysBerserk = false to make this " +
+                    "chance decide berserk-vs-disable outright.",
                     new AcceptableValueRange<float>(0f, 1f)));
+
+            TurretAlwaysBerserk = cfg.Bind("RemoteControl", "TurretAlwaysBerserk", true,
+                "true  = every turret code sends the turret berserk; TurretErrorChance then only adds an extended rampage. " +
+                "false = a turret code disables the turret as in vanilla, and only a TurretErrorChance roll sends it berserk.");
 
             MineErrorDamageMultiplier = cfg.Bind("RemoteControl", "MineErrorDamageMultiplier", 2.0f,
                 new ConfigDescription("On a mine error the blast is amplified: nearby mines within MineErrorChainRadius * this factor also detonate.",
                     new AcceptableValueRange<float>(1f, 5f)));
 
             TurretRampageDuration = cfg.Bind("RemoteControl", "TurretRampageDuration", 5.0f,
-                new ConfigDescription("Seconds a turret keeps re-triggering its berserk state on an error (chaotic spin-fire).",
+                new ConfigDescription("Extra seconds of rampage on a turret error, ON TOP of the ~10s vanilla berserk.",
                     new AcceptableValueRange<float>(0f, 30f)));
 
             TurretFlipOnBerserkExit = cfg.Bind("RemoteControl", "TurretFlipOnBerserkExit", true,

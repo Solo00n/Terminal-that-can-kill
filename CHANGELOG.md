@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.1.0
+- **Fixed the turret "error chance" behaving as if it were always on.** A rampage re-issued
+  `EnterBerserkModeServerRpc` every 1.5s; because that replays the berserk entry on remote
+  clients, a single command looked like the turret entered berserk ~5 times. The rampage now
+  only keeps the firing countdown alive and re-triggers solely if the turret genuinely
+  dropped out of berserk.
+- **Fixed rampage stretching the spin-up instead of the rampage.** `berserkTimer` means the
+  1.3s wind-up while `enteringBerserkMode`, and the firing countdown afterwards. Topping it
+  up during the wind-up made the turret whine and spin without shooting; it is now only
+  extended during the firing phase.
+- **New `TurretAlwaysBerserk` option.** `true` (default, unchanged behaviour) = every turret
+  code sends it berserk and `TurretErrorChance` only adds an extended rampage. `false` = a
+  turret code disables the turret as in vanilla and only an error roll sends it berserk,
+  which makes the configured chance directly observable.
+- Mine and turret commands now log the actual roll (`roll 0.412 >= 0.150`) so the chance can
+  be verified from the BepInEx log.
+
 ## 1.0.9
 - **Renamed to "Terminal that can kill" (by Solon).** New GUID `Solon.TerminalThatCanKill`
   and DLL name; delete the old plugin/config when updating.

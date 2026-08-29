@@ -127,12 +127,40 @@ namespace LethalDoors
             }
         }
 
-        /// <summary>Host-only: keep a rampaging turret's berserk timer topped up so it lasts.</summary>
+        /// <summary>True while the turret is in the berserk state (mode 3).</summary>
+        public static bool IsBerserk(Turret turret)
+        {
+            try { return turret != null && (int)turret.turretMode == TurretModeBerserk; }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// Host-only: extend an ongoing rampage.
+        ///
+        /// berserkTimer has TWO meanings in vanilla: while <c>enteringBerserkMode</c> it is the
+        /// 1.3s spin-up countdown (after which the game sets it to 9s and starts firing), and
+        /// afterwards it is the firing countdown. Writing to it during the spin-up stretches
+        /// that wind-up instead of prolonging the rampage — the turret just whines and spins
+        /// without shooting. So only ever top up the FIRING phase.
+        /// </summary>
         public static void SustainBerserk(Turret turret, float minTimer)
         {
             if (turret == null || !IsHost) return;
-            try { turret.berserkTimer = Mathf.Max(turret.berserkTimer, minTimer); }
+            try
+            {
+                if (turret.enteringBerserkMode) return;      // never touch the spin-up countdown
+                if (!IsBerserk(turret)) return;              // only while actually berserk
+                turret.berserkTimer = Mathf.Max(turret.berserkTimer, minTimer);
+            }
             catch { /* ignore */ }
+        }
+
+        /// <summary>Vanilla "disable turret" (what the terminal code normally does).</summary>
+        public static void DisableTurret(Turret turret)
+        {
+            if (turret == null) return;
+            try { turret.ToggleTurretEnabled(false); }
+            catch (Exception e) { Plugin.Log.LogError($"DisableTurret failed: {e}"); }
         }
 
         // NOTE: no custom crush sound needed — the game already plays StartOfRound.playerCrushDeath

@@ -19,13 +19,15 @@ namespace LethalDoors.Traps
         {
             if (mine == null) return;
 
-            bool error = Random.value < Plugin.Config.MineErrorChance.Value;
+            float chance = Plugin.Config.MineErrorChance.Value;
+            float roll = Random.value;
+            bool error = roll < chance;
 
             if (!error && Plugin.Config.MineWarnBeforeDetonate.Value)
             {
                 // Normal command with a short warning beep before the blast.
                 Plugin.Instance.StartCoroutine(WarnThenDetonate(mine));
-                Plugin.Log.LogInfo("Remote mine: armed (warning beep).");
+                Plugin.Log.LogInfo($"Remote mine: armed, warning beep (roll {roll:F3} >= {chance:F3}).");
                 return;
             }
 
@@ -34,12 +36,12 @@ namespace LethalDoors.Traps
 
             if (error)
             {
-                Plugin.Log.LogWarning("Remote mine CRITICAL ERROR — chain detonation!");
+                Plugin.Log.LogWarning($"Remote mine CRITICAL ERROR (roll {roll:F3} < {chance:F3}) — chain detonation!");
                 ChainDetonateNearby(mine.transform.position);
             }
             else
             {
-                Plugin.Log.LogInfo("Remote mine: detonated.");
+                Plugin.Log.LogInfo($"Remote mine: detonated (roll {roll:F3} >= {chance:F3}, no error).");
             }
         }
 
@@ -77,41 +79,71 @@ namespace LethalDoors.Traps
         }
 
         // ------------------------------------------------------------------ TURRET
-        public static void HandleTurret(Turret turret)
+
+        // Vanilla berserk length: 1.3s spin-up + 9s firing (see Turret.Update, case Berserk).
+        private const float VanillaBerserkSeconds = 10.3f;
+        private const float RampageTickSeconds = 0.5f;
+
+        /// <summary>
+        /// Handle a turret code. Returns true when we took over (the vanilla "disable" must be
+        /// suppressed), false when vanilla should run normally.
+        /// </summary>
+        public static bool HandleTurret(Turret turret)
         {
-            if (turret == null) return;
+            if (turret == null) return false;
 
-            bool error = Random.value < Plugin.Config.TurretErrorChance.Value;
+            float chance = Plugin.Config.TurretErrorChance.Value;
+            float roll = Random.value;
+            bool error = roll < chance;
 
-            // Normal: turret goes berserk (spins & fires at everything, players included).
+            // With TurretAlwaysBerserk = false the roll decides berserk-vs-disable outright,
+            // which makes the configured chance directly observable.
+            if (!error && !Plugin.Config.TurretAlwaysBerserk.Value)
+            {
+                Plugin.Log.LogInfo($"Remote turret: roll {roll:F3} >= {chance:F3} -> vanilla disable.");
+                return false;
+            }
+
             GameCompat.BerserkTurret(turret);
 
             if (error)
             {
-                Plugin.Log.LogWarning("Remote turret CRITICAL ERROR — sustained rampage!");
-                Plugin.Instance.StartCoroutine(Rampage(turret, Plugin.Config.TurretRampageDuration.Value));
+                float extra = Plugin.Config.TurretRampageDuration.Value;
+                Plugin.Log.LogWarning(
+                    $"Remote turret CRITICAL ERROR (roll {roll:F3} < {chance:F3}) — rampage extended by {extra:0.#}s.");
+                Plugin.Instance.StartCoroutine(Rampage(turret, extra));
             }
             else
             {
-                Plugin.Log.LogInfo("Remote turret: berserk.");
+                Plugin.Log.LogInfo($"Remote turret: berserk (roll {roll:F3} >= {chance:F3}, no error).");
             }
+            return true;
         }
 
         /// <summary>
-        /// Keep the turret raging for the configured duration. On the host we top up the
-        /// berserk timer directly (smoothest); on any client we also re-issue the berserk
-        /// trigger through the vanilla ServerRpc so it re-ignites if it settles early.
-        /// Vanilla berserk lasts ~10s on its own, so this mainly matters for longer values.
+        /// Hold the rampage open for <paramref name="extraSeconds"/> beyond vanilla.
+        ///
+        /// Important: we do NOT re-issue the berserk trigger on a timer. Re-sending
+        /// EnterBerserkModeServerRpc while the turret is already berserk replays the entry on
+        /// remote clients, which is what made a single command look like the turret "entering
+        /// berserk" five times. We only re-trigger if it genuinely dropped out of berserk;
+        /// otherwise we just keep the firing countdown from expiring.
         /// </summary>
-        private static IEnumerator Rampage(Turret turret, float duration)
+        private static IEnumerator Rampage(Turret turret, float extraSeconds)
         {
-            float end = Time.time + duration;
+            float end = Time.time + VanillaBerserkSeconds + extraSeconds;
+            var wait = new WaitForSeconds(RampageTickSeconds);
+
             while (Time.time < end)
             {
                 if (turret == null) yield break;
-                GameCompat.SustainBerserk(turret, 3f);
-                GameCompat.BerserkTurret(turret);
-                yield return new WaitForSeconds(1.5f);
+
+                if (!GameCompat.IsBerserk(turret))
+                    GameCompat.BerserkTurret(turret);                 // settled early -> relight
+                else
+                    GameCompat.SustainBerserk(turret, RampageTickSeconds * 3f);
+
+                yield return wait;
             }
         }
     }

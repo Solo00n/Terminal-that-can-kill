@@ -1,6 +1,6 @@
 {
   "name": "Terminal_that_can_kill",
-  "version_number": "1.0.9",
+  "version_number": "1.1.0",
   "website_url": "https://github.com/Solo00n/Terminal-that-can-kill",
   "description": "The terminal glitches: mines detonate and turrets go berserk instead of disabling, and closing ship & security doors crush anyone in the doorway.",
   "dependencies": [
