@@ -20,6 +20,7 @@ namespace LethalDoors.Patches
             // Reset per-object state carried over from a previous level.
             Doors.TerminalDoorCrush.Clear();
             TurretHeadFlipPatch.ClearStates();
+            Traps.AlliedTraps.Clear();
         }
     }
 }

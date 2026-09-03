@@ -4,7 +4,7 @@
 
 ![Lethal Company](https://img.shields.io/badge/Lethal%20Company-V81-cc0000?style=flat-square)
 ![BepInEx](https://img.shields.io/badge/BepInEx-5.4.21%2B-cc0000?style=flat-square)
-![Version](https://img.shields.io/badge/version-1.0.9-cc0000?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.2.0-cc0000?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-cc0000?style=flat-square)
 
 **Language / Язык:** [English](#english) · [Русский](#russian)
@@ -22,6 +22,7 @@ The ship and facility doors slam shut on anyone in the doorway, and the terminal
 - <strong style="color: #cc0000;">Deadly facility doors</strong> — the big terminal-code security doors crush whoever is in the opening when they slam shut.
 - <strong style="color: #cc0000;">Remote mine detonation</strong> — entering a mine code blows it up instead of disabling it; a critical error chain-detonates nearby mines.
 - <strong style="color: #cc0000;">Turret rampage</strong> — entering a turret code sends it berserk (spins and fires at everyone); a critical error extends the rampage.
+- <strong style="color: #cc0000;">Hijacked traps</strong> — a trap can flip to your side: an allied turret stops seeing players entirely and hunts monsters, and an allied mine can no longer be set off by the team and waits for a monster instead.
 - <strong style="color: #cc0000;">Turret head flip</strong> — after leaving berserk a turret smoothly turns its head 180° and rests facing the opposite way.
 - <strong style="color: #cc0000;">Barber-style death</strong> — door kills reuse the Barber (Clay Surgeon) death: the body is launched up and ragdolls.
 - <strong style="color: #cc0000;">Fully configurable</strong> — every mechanic can be tuned or turned off.
@@ -40,7 +41,8 @@ Both the <strong style="color: #cc0000;">host and all clients must install the m
 <br><br>
 <strong style="color: #cc0000;">Players:</strong> each client only kills its own local player; <code>KillPlayer</code> syncs that death to everyone, so exactly one authoritative kill happens.<br>
 <strong style="color: #cc0000;">Monsters:</strong> only the host iterates and kills enemies (the host owns enemy AI), which syncs to clients.<br>
-<strong style="color: #cc0000;">Traps:</strong> mine and turret effects fire through the game's own server RPCs, so all clients see the same result.
+<strong style="color: #cc0000;">Traps:</strong> mine and turret effects fire through the game's own server RPCs, so all clients see the same result.<br>
+<strong style="color: #cc0000;">Hijacks:</strong> the allied roll is derived from the level seed and the trap id, so every client computes the same answer with no networking at all.
 </blockquote>
 
 ### <span style="color: #cc0000;">REQUIREMENTS</span>
@@ -71,10 +73,13 @@ File: <code>BepInEx/config/Solon.TerminalThatCanKill.cfg</code> (created on firs
 <tr><td><code>MineErrorChance</code></td><td><code>0.15</code></td><td>Chance a mine command misfires into a chain blast.</td></tr>
 <tr><td><code>TurretErrorChance</code></td><td><code>0.15</code></td><td>Chance a turret command misfires into a sustained rampage.</td></tr>
 <tr><td><code>TurretFlipOnBerserkExit</code></td><td><code>true</code></td><td>Turret head turns 180° after leaving berserk.</td></tr>
+<tr><td><code>EnableAlliedTraps</code></td><td><code>true</code></td><td>Allow a trap command to hijack the trap to your side.</td></tr>
+<tr><td><code>AlliedChance</code></td><td><code>0.25</code></td><td>Chance a trap is hijackable (deterministic per trap).</td></tr>
+<tr><td><code>AlliedDuration</code></td><td><code>60</code></td><td>Seconds a hijacked trap stays allied. 0 = rest of the round.</td></tr>
 </table>
 
 <blockquote style="border-left: 4px solid #cc0000; padding-left: 15px;">
-Advanced tuning (zone size <code>DoorwayThickness/Width/Height</code>, close timings, <code>PlayerDeathAnimationId</code>, chain radius, rampage duration) lives in the <code>Doors.Advanced</code> and <code>RemoteControl.Advanced</code> sections of the config.
+Advanced tuning (zone size <code>DoorwayThickness/Width/Height</code>, close timings, <code>PlayerDeathAnimationId</code>, chain radius, rampage duration) lives in the <code>Doors.Advanced</code> and <code>RemoteControl.Advanced</code> sections; hijack tuning lives in <code>AlliedTraps</code>.
 </blockquote>
 
 ### <span style="color: #cc0000;">COMPATIBILITY</span>
@@ -93,7 +98,7 @@ Output: <code>bin/Release/Solon.TerminalThatCanKill.dll</code>. Game assemblies 
 
 - <strong style="color: #cc0000;">Solo00n</strong> — author.
 - Built on <strong style="color: #cc0000;">BepInEx</strong> and <strong style="color: #cc0000;">HarmonyX</strong>.
-- Inspiration: <em>Lethal Doors</em> by saint_kendrick (ship-door approach) and <em>RemoteMineDetonation</em> by jacksonb-cs (terminal detonation idea).
+- Inspiration: <em>Lethal Doors</em> by saint_kendrick (ship-door approach), <em>RemoteMineDetonation</em> by jacksonb-cs (terminal detonation idea) and <em>AlliedDefenses</em> by Remilulz91 (the idea of turning traps against the monsters). Implementation here is written from the game's own code, not taken from those mods.
 - Licensed under <strong style="color: #cc0000;">MIT</strong>.
 
 <a name="russian"></a>
@@ -109,6 +114,7 @@ Output: <code>bin/Release/Solon.TerminalThatCanKill.dll</code>. Game assemblies 
 - <strong style="color: #cc0000;">Смертельные двери комплекса</strong> — большие двери с кодом раздавливают того, кто стоит в проёме при захлопывании.
 - <strong style="color: #cc0000;">Удалённая детонация мин</strong> — ввод кода мины взрывает её вместо отключения; при критической ошибке детонируют соседние мины.
 - <strong style="color: #cc0000;">Бешенство турели</strong> — ввод кода турели вводит её в берсерк (крутится и стреляет по всем); ошибка продлевает раж.
+- <strong style="color: #cc0000;">Захваченные ловушки</strong> — с некоторым шансом ловушка переходит на вашу сторону: союзная турель полностью перестаёт видеть игроков и охотится на монстров, а союзная мина больше не срабатывает на команду и ждёт монстра.
 - <strong style="color: #cc0000;">Разворот головы турели</strong> — после берсерка турель плавно поворачивает голову на 180° и остаётся смотреть в другую сторону.
 - <strong style="color: #cc0000;">Смерть как у Barber</strong> — смерть от двери повторяет смерть от Barber (Clay Surgeon): тело подбрасывает вверх.
 - <strong style="color: #cc0000;">Полная настройка</strong> — любую механику можно подстроить или выключить.
@@ -127,7 +133,8 @@ Output: <code>bin/Release/Solon.TerminalThatCanKill.dll</code>. Game assemblies 
 <br><br>
 <strong style="color: #cc0000;">Игроки:</strong> каждый клиент убивает только своего локального игрока; <code>KillPlayer</code> синхронизирует смерть на всех — ровно одно авторитетное убийство.<br>
 <strong style="color: #cc0000;">Монстры:</strong> перебирает и убивает врагов только хост (владеет ИИ), что синхронизируется клиентам.<br>
-<strong style="color: #cc0000;">Ловушки:</strong> эффекты мин и турелей идут через серверные RPC самой игры, поэтому итог одинаков у всех.
+<strong style="color: #cc0000;">Ловушки:</strong> эффекты мин и турелей идут через серверные RPC самой игры, поэтому итог одинаков у всех.<br>
+<strong style="color: #cc0000;">Захват:</strong> бросок на союзность выводится из сида уровня и id ловушки, поэтому каждый клиент вычисляет одинаковый результат вообще без сети.
 </blockquote>
 
 ### <span style="color: #cc0000;">ЗАВИСИМОСТИ</span>
@@ -158,10 +165,13 @@ Output: <code>bin/Release/Solon.TerminalThatCanKill.dll</code>. Game assemblies 
 <tr><td><code>MineErrorChance</code></td><td><code>0.15</code></td><td>Шанс сбоя команды мины (цепной взрыв).</td></tr>
 <tr><td><code>TurretErrorChance</code></td><td><code>0.15</code></td><td>Шанс сбоя команды турели (продлённый раж).</td></tr>
 <tr><td><code>TurretFlipOnBerserkExit</code></td><td><code>true</code></td><td>Разворот головы турели на 180° после берсерка.</td></tr>
+<tr><td><code>EnableAlliedTraps</code></td><td><code>true</code></td><td>Разрешить захват ловушки на свою сторону.</td></tr>
+<tr><td><code>AlliedChance</code></td><td><code>0.25</code></td><td>Шанс, что ловушку можно захватить (детерминирован для ловушки).</td></tr>
+<tr><td><code>AlliedDuration</code></td><td><code>60</code></td><td>Сколько секунд ловушка союзная. 0 = до конца раунда.</td></tr>
 </table>
 
 <blockquote style="border-left: 4px solid #cc0000; padding-left: 15px;">
-Тонкая настройка (размеры зоны <code>DoorwayThickness/Width/Height</code>, тайминги закрытия, <code>PlayerDeathAnimationId</code>, радиус цепи, длительность ража) — в разделах <code>Doors.Advanced</code> и <code>RemoteControl.Advanced</code> конфига.
+Тонкая настройка (размеры зоны <code>DoorwayThickness/Width/Height</code>, тайминги закрытия, <code>PlayerDeathAnimationId</code>, радиус цепи, длительность ража) — в разделах <code>Doors.Advanced</code> и <code>RemoteControl.Advanced</code>; настройки захвата — в <code>AlliedTraps</code>.
 </blockquote>
 
 ### <span style="color: #cc0000;">СОВМЕСТИМОСТЬ</span>
@@ -180,5 +190,5 @@ Output: <code>bin/Release/Solon.TerminalThatCanKill.dll</code>. Game assemblies 
 
 - <strong style="color: #cc0000;">Solo00n</strong> — автор.
 - Построено на <strong style="color: #cc0000;">BepInEx</strong> и <strong style="color: #cc0000;">HarmonyX</strong>.
-- Идеи: <em>Lethal Doors</em> от saint_kendrick (подход к двери корабля) и <em>RemoteMineDetonation</em> от jacksonb-cs (детонация из терминала).
+- Идеи: <em>Lethal Doors</em> от saint_kendrick (подход к двери корабля), <em>RemoteMineDetonation</em> от jacksonb-cs (детонация из терминала) и <em>AlliedDefenses</em> от Remilulz91 (идея обращать ловушки против монстров). Реализация здесь написана по коду самой игры, а не взята из этих модов.
 - Лицензия <strong style="color: #cc0000;">MIT</strong>.

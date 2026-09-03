@@ -163,6 +163,84 @@ namespace LethalDoors
             catch (Exception e) { Plugin.Log.LogError($"DisableTurret failed: {e}"); }
         }
 
+        // ================================================================== ALLIED TURRET
+        /// <summary>
+        /// Hold an allied turret in its firing state. Berserk is the only firing state that
+        /// sustains itself without a player target, and the CheckForPlayersInLineOfSight patch
+        /// stops it hurting players, so it becomes a pure anti-monster gun.
+        /// </summary>
+        public static void KeepTurretFiring(Turret turret)
+        {
+            if (turret == null) return;
+            try
+            {
+                turret.turretActive = true;
+                if (!IsBerserk(turret)) turret.SwitchTurretMode(TurretModeBerserk);
+                SustainBerserk(turret, 2f); // host-only, firing phase only
+            }
+            catch { /* ignore */ }
+        }
+
+        /// <summary>Drop an allied turret back to normal scanning.</summary>
+        public static void StopTurretFiring(Turret turret)
+        {
+            if (turret == null || !IsHost) return;
+            try
+            {
+                turret.SwitchTurretMode(0);      // Detection
+                turret.SetToModeClientRpc(0);    // and tell everyone else
+            }
+            catch { /* ignore */ }
+        }
+
+        /// <summary>
+        /// Point an allied turret at a world position. Mirrors what vanilla does when it has a
+        /// target (compass LookAt, then RotateTowards), and runs from our Update postfix so it
+        /// wins over the turret's own scanning rotation for that frame.
+        /// </summary>
+        public static void AimTurretAt(Turret turret, Vector3 worldPoint)
+        {
+            if (turret == null || turret.turretRod == null) return;
+            try
+            {
+                Vector3 dir = worldPoint - turret.turretRod.position;
+                if (dir.sqrMagnitude < 0.0001f) return;
+
+                Quaternion desired = Quaternion.LookRotation(dir);
+                turret.turretRod.rotation = Quaternion.RotateTowards(
+                    turret.turretRod.rotation, desired, 140f * Time.deltaTime);
+            }
+            catch { /* ignore */ }
+        }
+
+        /// <summary>Host-side damage to an enemy (host owns enemy AI, so this syncs).</summary>
+        public static void HurtEnemy(EnemyAI enemy, int force)
+        {
+            if (enemy == null || !IsHost) return;
+            try
+            {
+                if (enemy.enemyType != null && !enemy.enemyType.canDie) return; // unkillable enemies
+                enemy.HitEnemyOnLocalClient(force, Vector3.zero, null, true, -1);
+            }
+            catch (Exception e)
+            {
+                Plugin.Log.LogError($"HurtEnemy failed: {e}");
+            }
+        }
+
+        /// <summary>Simple LOS check against world/room geometry.</summary>
+        public static bool HasLineOfSight(Vector3 from, Vector3 to)
+        {
+            try
+            {
+                int mask = StartOfRound.Instance != null
+                    ? StartOfRound.Instance.collidersAndRoomMask
+                    : ~0;
+                return !Physics.Linecast(from, to, mask, QueryTriggerInteraction.Ignore);
+            }
+            catch { return true; }
+        }
+
         // NOTE: no custom crush sound needed — the game already plays StartOfRound.playerCrushDeath
         // for CauseOfDeath.Crushing when the dead body spawns.
 

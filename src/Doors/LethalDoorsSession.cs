@@ -28,6 +28,9 @@ namespace LethalDoors.Doors
 
             // Frame-driven crush for facility (terminal) doors.
             TerminalDoorCrush.Tick();
+
+            // Drive hijacked traps (cheap no-op when nothing is allied).
+            Traps.AlliedTraps.Tick();
         }
 
         /// <summary>True while doors must NOT kill (grace period right after landing).</summary>

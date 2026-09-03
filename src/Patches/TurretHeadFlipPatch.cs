@@ -48,6 +48,8 @@ namespace LethalDoors.Patches
         private static void Postfix(Turret __instance)
         {
             if (!Plugin.Config.TurretFlipOnBerserkExit.Value) return;
+            // An allied turret aims itself at monsters; don't fight it over turretRod.
+            if (Traps.AlliedTraps.IsAllied(__instance)) return;
             try { Process(__instance); }
             catch (Exception e) { Plugin.Log.LogError($"Turret head flip error: {e}"); }
         }

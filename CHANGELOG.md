@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.0
+- **New: hijacked (allied) traps.** A terminal trap command can now flip the trap to your side
+  instead of detonating it. An allied turret stops seeing players entirely and hunts monsters;
+  an allied mine can no longer be set off by the team and waits for a monster to walk up to it.
+  Controlled by `AlliedChance`, `AlliedDuration` and the rest of the `[AlliedTraps]` section.
+- The hijack roll is **deterministic per trap** (level seed + NetworkObjectId), so every client
+  independently computes the same result. No custom networking, and re-entering the code cannot
+  re-roll a trap.
+- Turret player-immunity is a single postfix on `Turret.CheckForPlayersInLineOfSight`, which the
+  game uses both to pick a target and as the condition for damaging the local player.
+
 ## 1.1.0
 - **Fixed the turret "error chance" behaving as if it were always on.** A rampage re-issued
   `EnterBerserkModeServerRpc` every 1.5s; because that replays the berserk entry on remote

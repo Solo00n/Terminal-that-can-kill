@@ -51,6 +51,15 @@ namespace LethalDoors
         public readonly ConfigEntry<bool> TurretFlipOnBerserkExit;
         public readonly ConfigEntry<float> TurretFlipSmoothDuration;
 
+        // ---- [AlliedTraps] ----------------------------------------------------
+        public readonly ConfigEntry<bool> EnableAlliedTraps;
+        public readonly ConfigEntry<float> AlliedChance;
+        public readonly ConfigEntry<float> AlliedDuration;
+        public readonly ConfigEntry<float> AlliedTurretRange;
+        public readonly ConfigEntry<int> AlliedTurretDamage;
+        public readonly ConfigEntry<float> AlliedTurretHitInterval;
+        public readonly ConfigEntry<float> AlliedMineTriggerRadius;
+
         // ---- [RemoteControl.Advanced] ---------------------------------------
         public readonly ConfigEntry<float> MineErrorChainRadius;
         public readonly ConfigEntry<bool> MineWarnBeforeDetonate;
@@ -154,6 +163,37 @@ namespace LethalDoors
             TurretFlipSmoothDuration = cfg.Bind("RemoteControl", "TurretFlipSmoothDuration", 0.5f,
                 new ConfigDescription("Seconds the 180° head turn takes on berserk exit. 0 = instant snap.",
                     new AcceptableValueRange<float>(0f, 5f)));
+
+            // ---------------------------------------------------------------- AlliedTraps
+            EnableAlliedTraps = cfg.Bind("AlliedTraps", "EnableAlliedTraps", true,
+                "Allow a terminal trap command to HIJACK the trap instead: it stops reacting to players " +
+                "and starts fighting monsters for you.");
+
+            AlliedChance = cfg.Bind("AlliedTraps", "AlliedChance", 0.25f,
+                new ConfigDescription("Chance (0..1) that a trap is hijackable. Rolled deterministically per trap " +
+                    "from the level seed, so every player gets the same answer and re-entering the code cannot re-roll it.",
+                    new AcceptableValueRange<float>(0f, 1f)));
+
+            AlliedDuration = cfg.Bind("AlliedTraps", "AlliedDuration", 60f,
+                new ConfigDescription("Seconds a hijacked trap stays on your side. 0 = for the rest of the round.",
+                    new AcceptableValueRange<float>(0f, 600f)));
+
+            AlliedTurretRange = cfg.Bind("AlliedTraps", "AlliedTurretRange", 30f,
+                new ConfigDescription("How far (metres) an allied turret looks for monsters.",
+                    new AcceptableValueRange<float>(5f, 80f)));
+
+            AlliedTurretDamage = cfg.Bind("AlliedTraps", "AlliedTurretDamage", 1,
+                new ConfigDescription("Damage per hit an allied turret deals to a monster (enemy HP is small, " +
+                    "most have 3-8).", new AcceptableValueRange<int>(1, 10)));
+
+            AlliedTurretHitInterval = cfg.Bind("AlliedTraps", "AlliedTurretHitInterval", 0.4f,
+                new ConfigDescription("Seconds between an allied turret's hits on its target.",
+                    new AcceptableValueRange<float>(0.05f, 3f)));
+
+            AlliedMineTriggerRadius = cfg.Bind("AlliedTraps", "AlliedMineTriggerRadius", 2.5f,
+                new ConfigDescription("How close (metres) a monster must get before an allied mine goes off. " +
+                    "The blast itself is still a real explosion, so do not stand next to it.",
+                    new AcceptableValueRange<float>(0.5f, 10f)));
 
             // ---------------------------------------------------------------- RemoteControl.Advanced
             MineErrorChainRadius = cfg.Bind("RemoteControl.Advanced", "MineErrorChainRadius", 8.0f,

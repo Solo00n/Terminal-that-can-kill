@@ -19,6 +19,14 @@ namespace LethalDoors.Traps
         {
             if (mine == null) return;
 
+            // Hijack takes priority: this mine flips to our side instead of blowing up now.
+            if (AlliedTraps.RollAllied(mine))
+            {
+                AlliedTraps.MakeAllied(mine);
+                Plugin.Log.LogInfo("Remote mine HIJACKED — it now ignores players and waits for monsters.");
+                return;
+            }
+
             float chance = Plugin.Config.MineErrorChance.Value;
             float roll = Random.value;
             bool error = roll < chance;
@@ -91,6 +99,14 @@ namespace LethalDoors.Traps
         public static bool HandleTurret(Turret turret)
         {
             if (turret == null) return false;
+
+            // Hijack takes priority over the berserk/disable outcome.
+            if (AlliedTraps.RollAllied(turret))
+            {
+                AlliedTraps.MakeAllied(turret);
+                Plugin.Log.LogInfo("Remote turret HIJACKED — it now ignores players and hunts monsters.");
+                return true;
+            }
 
             float chance = Plugin.Config.TurretErrorChance.Value;
             float roll = Random.value;
