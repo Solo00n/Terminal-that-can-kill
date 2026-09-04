@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.3
+- **Modded turrets respond to terminal codes again** (DefendFacility's mini turret). The trap is
+  now identified before anything else: vanilla declares `isBigDoor = true` by default, so a trap
+  that gains a `TerminalAccessibleObject` at runtime without clearing that flag was mistaken for
+  a door and silently ignored.
+- **The hijack chance behaves like a chance again.** It was seeded per trap, which fixed the
+  outcome forever — a trap that rolled badly could never be hijacked no matter how many times you
+  tried, so at the default 0.25 three traps in four were permanently un-hijackable. It is rolled
+  fresh per command now (the hijack is broadcast explicitly, so it no longer needs to be
+  reproducible), and the roll is logged.
+- Clients no longer re-roll a hijack they were told about, so they can never disagree with the
+  player who issued the command.
+
 ## 1.3.2
 - **Green tint now works on modded turrets** (DefendFacility's mini turret and other grabbable
   turrets). Colours are written through a `MaterialPropertyBlock` instead of onto the material:

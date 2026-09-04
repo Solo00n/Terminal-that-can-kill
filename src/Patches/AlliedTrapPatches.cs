@@ -69,9 +69,9 @@ namespace LethalDoors.Patches
     //
     // The terminal only runs CallFunctionFromTerminal on the client that typed the code, so
     // registering the hijack there alone would leave the trap hostile for everyone else.
-    // Instead the hijack fires a vanilla RPC that the game already syncs, and each client
-    // re-derives "is this trap hijackable?" from the deterministic roll. Same answer
-    // everywhere, still no custom networking.
+    // Instead the hijack rides a vanilla RPC the game already syncs, carrying a marker only we
+    // ever send. The client that typed the code decides; everyone else simply obeys the marker
+    // and never rolls again, so no one can disagree. Still no custom networking.
     // =====================================================================================
 
     /// <summary>
@@ -130,8 +130,9 @@ namespace LethalDoors.Patches
             _offAt.Remove(__instance);
             if (UnityEngine.Time.time - off > BlinkWindow) return;
 
+            // The blink itself IS the decision — never re-roll here, or clients would disagree
+            // with the player who actually issued the command.
             if (AlliedTraps.IsAllied(__instance)) return;
-            if (!AlliedTraps.RollAllied(__instance)) return;
 
             AlliedTraps.MakeAllied(__instance);
             GameCompat.PlayHackCue(__instance);

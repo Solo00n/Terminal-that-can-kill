@@ -59,8 +59,14 @@ namespace LethalDoors.Traps
 
         // ------------------------------------------------------------------ roll
         /// <summary>
-        /// Deterministic per-trap allied roll: identical on every client for a given trap and
-        /// level, so all clients agree without any networking.
+        /// Rolled fresh for each command, on the client that typed the code.
+        ///
+        /// This used to be seeded per trap so that every client computed the same answer without
+        /// networking. That is no longer needed — the hijack is broadcast explicitly — and it had
+        /// a nasty consequence: the result was fixed forever, so a trap that rolled badly could
+        /// NEVER be hijacked no matter how often you tried, and at a 0.25 chance three traps in
+        /// four were permanently un-hijackable. A fresh roll makes the configured chance behave
+        /// the way you would expect.
         /// </summary>
         public static bool RollAllied(NetworkBehaviour trap)
         {
@@ -71,20 +77,10 @@ namespace LethalDoors.Traps
             if (chance <= 0f) return false;
             if (chance >= 1f) return true;
 
-            var sor = StartOfRound.Instance;
-            int levelPart = sor != null ? sor.randomMapSeed + sor.currentLevelID : 0;
-
-            // Modded traps (e.g. a shop-item turret) may not be network-spawned, in which case
-            // reading NetworkObjectId throws. Fall back to the instance id: the hijack itself is
-            // broadcast explicitly, so clients no longer need this roll to agree.
-            int idPart;
-            try { idPart = (int)(trap.NetworkObjectId & 0x7FFFFFFF); }
-            catch { idPart = trap.GetInstanceID() & 0x7FFFFFFF; }
-
-            int seed;
-            unchecked { seed = levelPart * 397 + idPart; }
-
-            return new System.Random(seed).NextDouble() < chance;
+            float roll = Random.value;
+            bool allied = roll < chance;
+            Plugin.Log.LogInfo($"Hijack roll {roll:F3} vs {chance:F3} -> {(allied ? "HIJACK" : "no")}.");
+            return allied;
         }
 
         private static float ExpiryFromConfig()

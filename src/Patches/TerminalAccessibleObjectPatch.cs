@@ -25,30 +25,34 @@ namespace LethalDoors.Patches
         {
             try
             {
-                if (__instance.isBigDoor)
-                    return true; // vanilla toggles the door; crushing handled by SetDoorLocalClient patch
+                // Identify what this code actually belongs to FIRST. isBigDoor cannot be trusted
+                // as a filter: vanilla declares it `= true` by default, so a modded trap that adds
+                // a TerminalAccessibleObject at runtime without clearing the flag (DefendFacility's
+                // mini turret, for one) would be mistaken for a door and silently ignored.
+                var mine = __instance.GetComponent<Landmine>()
+                    ?? __instance.GetComponentInParent<Landmine>()
+                    ?? __instance.GetComponentInChildren<Landmine>();
+
+                var turret = mine != null ? null
+                    : __instance.GetComponent<Turret>()
+                      ?? __instance.GetComponentInParent<Turret>()
+                      ?? __instance.GetComponentInChildren<Turret>();
+
+                if (mine == null && turret == null)
+                    return true; // a real door (or something we do not handle) -> vanilla
 
                 if (!Plugin.Config.EnableRemoteControl.Value)
                     return true; // remote control off -> vanilla disable
 
-                var mine = __instance.GetComponent<Landmine>()
-                    ?? __instance.GetComponentInParent<Landmine>()
-                    ?? __instance.GetComponentInChildren<Landmine>();
                 if (mine != null)
                 {
                     RemoteControlManager.HandleMine(mine);
                     return false;
                 }
 
-                var turret = __instance.GetComponent<Turret>()
-                    ?? __instance.GetComponentInParent<Turret>()
-                    ?? __instance.GetComponentInChildren<Turret>();
-                if (turret != null)
-                {
-                    // Returns false when it wants vanilla to run (TurretAlwaysBerserk = false
-                    // and the error roll failed), so the turret is simply disabled as usual.
-                    return !RemoteControlManager.HandleTurret(turret);
-                }
+                // Returns false when it wants vanilla to run (TurretAlwaysBerserk = false and the
+                // error roll failed), so the turret is simply disabled as usual.
+                return !RemoteControlManager.HandleTurret(turret);
             }
             catch (Exception e)
             {
@@ -82,6 +86,8 @@ namespace LethalDoors.Patches
         private static void Postfix(TerminalAccessibleObject __instance, bool open, bool __state)
         {
             if (!__instance.isBigDoor) return;
+            if (__instance.GetComponentInParent<Turret>() != null ||
+                __instance.GetComponentInParent<Landmine>() != null) return; // a trap, not a door
             if (!Plugin.Config.Enabled.Value) return;
             if (Plugin.Config.AffectedDoors.Value == AffectedDoors.ShipDoor) return; // ship-only mode
 
