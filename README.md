@@ -33,6 +33,7 @@ The ship and facility doors slam shut on anyone in the doorway, and the terminal
 - Ship door: detected via <code>doorPower &lt; 1</code> plus the <code>ShipDoorClose</code> animator state; the doorway is at a fixed world position (the ship never moves).
 - Facility doors: detected on the <code>SetDoorOpen</code> open→closed transition and processed frame by frame.
 - Traps use the vanilla synced RPCs (<code>ExplodeMineServerRpc</code>, <code>EnterBerserkModeServerRpc</code>) — no custom network objects.
+- Trap power is never forced, so power mods such as <strong style="color: #cc0000;">DefendFacility</strong> stay in charge of whether a trap is on; this mod only changes who it targets.
 
 ### <span style="color: #cc0000;">MULTIPLAYER (HOST-AUTHORITATIVE)</span>
 
@@ -42,7 +43,7 @@ Both the <strong style="color: #cc0000;">host and all clients must install the m
 <strong style="color: #cc0000;">Players:</strong> each client only kills its own local player; <code>KillPlayer</code> syncs that death to everyone, so exactly one authoritative kill happens.<br>
 <strong style="color: #cc0000;">Monsters:</strong> only the host iterates and kills enemies (the host owns enemy AI), which syncs to clients.<br>
 <strong style="color: #cc0000;">Traps:</strong> mine and turret effects fire through the game's own server RPCs, so all clients see the same result.<br>
-<strong style="color: #cc0000;">Hijacks:</strong> the allied roll is derived from the level seed and the trap id, so every client computes the same answer with no networking at all.
+<strong style="color: #cc0000;">Hijacks:</strong> the client that typed the code decides, then announces it on a vanilla RPC carrying a marker only this mod sends; everyone else obeys that marker and never rolls again, so no one can disagree — still no custom networking.
 </blockquote>
 
 ### <span style="color: #cc0000;">REQUIREMENTS</span>
@@ -74,7 +75,7 @@ File: <code>BepInEx/config/Solon.TerminalThatCanKill.cfg</code> (created on firs
 <tr><td><code>TurretErrorChance</code></td><td><code>0.15</code></td><td>Chance a turret command misfires into a sustained rampage.</td></tr>
 <tr><td><code>TurretFlipOnBerserkExit</code></td><td><code>true</code></td><td>Turret head turns 180° after leaving berserk.</td></tr>
 <tr><td><code>EnableAlliedTraps</code></td><td><code>true</code></td><td>Allow a trap command to hijack the trap to your side.</td></tr>
-<tr><td><code>AlliedChance</code></td><td><code>0.25</code></td><td>Chance a trap is hijackable (deterministic per trap).</td></tr>
+<tr><td><code>AlliedChance</code></td><td><code>0.25</code></td><td>Chance a trap command hijacks the trap instead. Rolled per command.</td></tr>
 <tr><td><code>AlliedDuration</code></td><td><code>0</code></td><td>Seconds a hijacked trap stays allied. 0 = permanent.</td></tr>
 </table>
 
@@ -125,6 +126,7 @@ Output: <code>bin/Release/Solon.TerminalThatCanKill.dll</code>. Game assemblies 
 - Дверь корабля: определяется по <code>doorPower &lt; 1</code> плюс состоянию аниматора <code>ShipDoorClose</code>; проём в фиксированной точке мира (корабль не двигается).
 - Двери комплекса: ловятся на переходе <code>SetDoorOpen</code> открыта→закрыта и обрабатываются покадрово.
 - Ловушки используют ванильные синхронизированные RPC (<code>ExplodeMineServerRpc</code>, <code>EnterBerserkModeServerRpc</code>) — без своих сетевых объектов.
+- Питание ловушек мод не трогает, поэтому моды питания вроде <strong style="color: #cc0000;">DefendFacility</strong> остаются главными в вопросе «включена ли ловушка»; этот мод меняет только цель.
 
 ### <span style="color: #cc0000;">МУЛЬТИПЛЕЕР (HOST-AUTHORITATIVE)</span>
 
@@ -134,7 +136,7 @@ Output: <code>bin/Release/Solon.TerminalThatCanKill.dll</code>. Game assemblies 
 <strong style="color: #cc0000;">Игроки:</strong> каждый клиент убивает только своего локального игрока; <code>KillPlayer</code> синхронизирует смерть на всех — ровно одно авторитетное убийство.<br>
 <strong style="color: #cc0000;">Монстры:</strong> перебирает и убивает врагов только хост (владеет ИИ), что синхронизируется клиентам.<br>
 <strong style="color: #cc0000;">Ловушки:</strong> эффекты мин и турелей идут через серверные RPC самой игры, поэтому итог одинаков у всех.<br>
-<strong style="color: #cc0000;">Захват:</strong> бросок на союзность выводится из сида уровня и id ловушки, поэтому каждый клиент вычисляет одинаковый результат вообще без сети.
+<strong style="color: #cc0000;">Захват:</strong> решает клиент, который ввёл код, и объявляет об этом ванильным RPC с меткой, которую шлёт только этот мод; остальные подчиняются метке и не перебрасывают — разойтись невозможно, и своей сети по-прежнему не нужно.
 </blockquote>
 
 ### <span style="color: #cc0000;">ЗАВИСИМОСТИ</span>
@@ -166,7 +168,7 @@ Output: <code>bin/Release/Solon.TerminalThatCanKill.dll</code>. Game assemblies 
 <tr><td><code>TurretErrorChance</code></td><td><code>0.15</code></td><td>Шанс сбоя команды турели (продлённый раж).</td></tr>
 <tr><td><code>TurretFlipOnBerserkExit</code></td><td><code>true</code></td><td>Разворот головы турели на 180° после берсерка.</td></tr>
 <tr><td><code>EnableAlliedTraps</code></td><td><code>true</code></td><td>Разрешить захват ловушки на свою сторону.</td></tr>
-<tr><td><code>AlliedChance</code></td><td><code>0.25</code></td><td>Шанс, что ловушку можно захватить (детерминирован для ловушки).</td></tr>
+<tr><td><code>AlliedChance</code></td><td><code>0.25</code></td><td>Шанс, что команда захватит ловушку. Бросается на каждую команду.</td></tr>
 <tr><td><code>AlliedDuration</code></td><td><code>0</code></td><td>Сколько секунд ловушка союзная. 0 = навсегда.</td></tr>
 </table>
 
