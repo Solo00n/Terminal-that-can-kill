@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.2
+- **Green tint now works on modded turrets** (DefendFacility's mini turret and other grabbable
+  turrets). Colours are written through a `MaterialPropertyBlock` instead of onto the material:
+  skin systems push their look through a property block, and a block overrides the material, so
+  the old tint was being drawn over and never showed. This also stops the mod instantiating a
+  material copy per renderer.
+- Hijacking no longer breaks on traps that are not network-spawned (a shop-item turret, for
+  example) — reading `NetworkObjectId` there throws, so it now falls back safely.
+- The tint logs what it found (lights / beams / indicator materials) to make future skin
+  problems easy to diagnose.
+
 ## 1.3.1
 - **Fixed turrets flipping on and off forever.** The hijack was riding the turret power toggle,
   which the facility power system (and power mods such as DefendFacility, which re-applies trap

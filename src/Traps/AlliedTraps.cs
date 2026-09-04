@@ -73,7 +73,13 @@ namespace LethalDoors.Traps
 
             var sor = StartOfRound.Instance;
             int levelPart = sor != null ? sor.randomMapSeed + sor.currentLevelID : 0;
-            int idPart = (int)(trap.NetworkObjectId & 0x7FFFFFFF);
+
+            // Modded traps (e.g. a shop-item turret) may not be network-spawned, in which case
+            // reading NetworkObjectId throws. Fall back to the instance id: the hijack itself is
+            // broadcast explicitly, so clients no longer need this roll to agree.
+            int idPart;
+            try { idPart = (int)(trap.NetworkObjectId & 0x7FFFFFFF); }
+            catch { idPart = trap.GetInstanceID() & 0x7FFFFFFF; }
 
             int seed;
             unchecked { seed = levelPart * 397 + idPart; }
