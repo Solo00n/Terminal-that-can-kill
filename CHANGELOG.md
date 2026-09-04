@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.3.1
+- **Fixed turrets flipping on and off forever.** The hijack was riding the turret power toggle,
+  which the facility power system (and power mods such as DefendFacility, which re-applies trap
+  power several times a second) also uses — so the two fought each other. The hijack now rides a
+  sentinel value tagged onto the berserk broadcast, which nothing else in the game or in other
+  mods ever sends.
+- **Compatible with power mods.** The mod no longer forces `turretActive` at all. Whether a trap
+  has power is left entirely to the game and to power mods; this mod only ever changes *who* a
+  trap targets. With DefendFacility that means a blackout arms the traps, and any you have
+  hijacked defend you while the rest hunt the crew.
+- **A blackout can no longer be mistaken for a hack.** Mine hijacks are signalled by a deliberate
+  off-then-on blink instead of a plain shutdown, so a power cut no longer turns a quarter of the
+  map's mines friendly.
+
 ## 1.3.0
 - **Hijacking a turret no longer sends it berserk.** The hijack used the berserk broadcast as
   its sync carrier, so the turret really did spin out for a moment. It now travels on the

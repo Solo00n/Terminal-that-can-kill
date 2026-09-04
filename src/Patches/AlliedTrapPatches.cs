@@ -75,39 +75,61 @@ namespace LethalDoors.Patches
     // =====================================================================================
 
     /// <summary>
-    /// Turret hijack arrives as the vanilla "turret powered down" broadcast.
+    /// Turret hijack arrives tagged on the vanilla berserk broadcast.
     ///
-    /// The shutdown is only a carrier: it is the one turret RPC any client may raise that
-    /// reaches everyone, it costs no custom networking, and it sounds exactly like the start of
-    /// a hack. Every client then re-derives the same deterministic roll and, if the trap is
-    /// hijackable, powers it straight back up on your side. Berserk is deliberately not used —
-    /// that would make a hijacked turret spin out instead of behaving normally.
+    /// The berserk RPC carries an int ("who triggered it"), and vanilla only ever puts a real
+    /// player id in it. We put a sentinel there instead, which makes the message unmistakably
+    /// ours: no other system sends it, so we never react to somebody else's event. The berserk
+    /// the carrier would cause is cancelled immediately, so a hijacked turret does not spin out.
+    ///
+    /// The previous carrier (the turret power toggle) was wrong: the facility power system
+    /// toggles turrets as well, so re-enabling on every shutdown fought the breaker and flipped
+    /// the turret on and off forever.
     /// </summary>
-    [HarmonyPatch(typeof(Turret), "ToggleTurretEnabledLocalClient")]
+    [HarmonyPatch(typeof(Turret), nameof(Turret.EnterBerserkModeClientRpc))]
     internal static class Turret_AlliedSync_Patch
     {
         [HarmonyPostfix]
-        private static void Postfix(Turret __instance, bool enabled)
+        private static void Postfix(Turret __instance, int playerWhoTriggered)
         {
-            if (enabled) return;                       // only a shutdown can be a hijack
+            if (playerWhoTriggered != GameCompat.HijackSignal) return; // a genuine berserk
 
             bool already = AlliedTraps.IsAllied(__instance);
-            if (!already && !AlliedTraps.RollAllied(__instance)) return;
-
             AlliedTraps.MakeAllied(__instance);
-            GameCompat.BringTurretOnline(__instance);   // the shutdown was just the handshake
+            GameCompat.CancelBerserk(__instance);
             if (!already) GameCompat.PlayHackCue(__instance);
         }
     }
 
-    /// <summary>Mine hijack arrives as the vanilla "mine deactivated" broadcast.</summary>
+    /// <summary>
+    /// Mine hijack arrives as a deliberate off-then-on BLINK of the mine's power.
+    ///
+    /// A single shutdown is ambiguous — the facility power system (and power mods such as
+    /// DefendFacility) switches mines off too, and treating that as a hack would silently turn a
+    /// quarter of the map's mines friendly during every blackout. A blink is something only we
+    /// ever produce.
+    /// </summary>
     [HarmonyPatch(typeof(Landmine), nameof(Landmine.ToggleMineEnabledLocalClient))]
     internal static class Landmine_AlliedSync_Patch
     {
+        private const float BlinkWindow = 0.6f;
+        private static readonly System.Collections.Generic.Dictionary<Landmine, float> _offAt =
+            new System.Collections.Generic.Dictionary<Landmine, float>();
+
+        public static void Clear() => _offAt.Clear();
+
         [HarmonyPostfix]
         private static void Postfix(Landmine __instance, bool enabled)
         {
-            if (enabled) return;                                  // only a shutdown can be a hijack
+            if (__instance == null) return;
+
+            if (!enabled) { _offAt[__instance] = UnityEngine.Time.time; return; }
+
+            // Powering back on: only a hack if it came right after our own shutdown.
+            if (!_offAt.TryGetValue(__instance, out float off)) return;
+            _offAt.Remove(__instance);
+            if (UnityEngine.Time.time - off > BlinkWindow) return;
+
             if (AlliedTraps.IsAllied(__instance)) return;
             if (!AlliedTraps.RollAllied(__instance)) return;
 

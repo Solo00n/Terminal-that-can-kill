@@ -21,6 +21,7 @@ namespace LethalDoors.Patches
             Doors.TerminalDoorCrush.Clear();
             TurretHeadFlipPatch.ClearStates();
             Traps.AlliedTraps.Clear();
+            Landmine_AlliedSync_Patch.Clear();
         }
     }
 }

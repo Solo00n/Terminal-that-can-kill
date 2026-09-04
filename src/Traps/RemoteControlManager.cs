@@ -22,9 +22,9 @@ namespace LethalDoors.Traps
             // Hijack takes priority: this mine flips to our side instead of blowing up now.
             if (AlliedTraps.RollAllied(mine))
             {
-                // Vanilla deactivate: synced to every client, and each of them re-derives the
-                // same hijack roll from it (see Landmine_AlliedSync_Patch).
-                GameCompat.DisableMine(mine);
+                // Off-then-on blink: reaches every client and cannot be confused with a power
+                // system switching mines off (see Landmine_AlliedSync_Patch).
+                GameCompat.BroadcastHijack(mine);
                 AlliedTraps.MakeAllied(mine);
                 Plugin.Log.LogInfo("Remote mine HIJACKED — it now ignores players and waits for monsters.");
                 return;
@@ -106,11 +106,10 @@ namespace LethalDoors.Traps
             // Hijack takes priority over the berserk/disable outcome.
             if (AlliedTraps.RollAllied(turret))
             {
-                // Power the turret down: that is our synced carrier (every client receives it and
-                // re-derives the same hijack roll, then brings it straight back online). It also
-                // sounds like a hack, and unlike the berserk broadcast it does NOT make the
-                // hijacked turret spin out.
-                GameCompat.DisableTurret(turret);
+                // Tagged broadcast: reaches every client, cannot be confused with anyone else's
+                // event (including the facility power system), and the berserk it would cause is
+                // cancelled on arrival so the turret never spins out.
+                GameCompat.BroadcastHijack(turret);
                 AlliedTraps.MakeAllied(turret);
                 Plugin.Log.LogInfo("Remote turret HIJACKED — it now ignores players and hunts monsters.");
                 return true;

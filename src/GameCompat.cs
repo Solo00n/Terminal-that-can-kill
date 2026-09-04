@@ -168,11 +168,22 @@ namespace LethalDoors
         /// client, and it flips the flag the game itself checks before detonating on a player.
         /// Detonate() does NOT check that flag, so we can still set the mine off on monsters.
         /// </summary>
-        public static void DisableMine(Landmine mine)
+        public static void BroadcastHijack(Landmine mine)
         {
-            if (mine == null) return;
-            try { mine.ToggleMine(false); }
-            catch (Exception e) { Plugin.Log.LogError($"DisableMine failed: {e}"); }
+            if (mine == null || Plugin.Instance == null) return;
+            Plugin.Instance.StartCoroutine(MineHijackBlink(mine));
+        }
+
+        /// <summary>
+        /// Mines have no RPC carrying a value we could tag, so the hijack is signalled as a
+        /// deliberate off-then-on BLINK. A power system only ever sets a steady state, so a
+        /// blink is unmistakably ours — this is what stops a blackout being mistaken for a hack.
+        /// </summary>
+        private static System.Collections.IEnumerator MineHijackBlink(Landmine mine)
+        {
+            try { mine.ToggleMine(false); } catch { yield break; }
+            yield return null;
+            if (mine != null) { try { mine.ToggleMine(true); } catch { /* ignore */ } }
         }
 
         // ================================================================== ALLIED TURRET
@@ -199,7 +210,10 @@ namespace LethalDoors
             if (turret == null) return;
             try
             {
-                turret.turretActive = true;
+                // Deliberately does NOT touch turretActive. Whether a trap has power belongs to
+                // the game (and to power mods such as DefendFacility, which re-applies trap power
+                // several times a second). Forcing it on here fought that and made the turret
+                // flicker on and off forever. We only ever change WHO the trap targets.
                 if (turret.targetPlayerWithRotation == null)
                     turret.targetPlayerWithRotation = LocalPlayer;
             }
@@ -215,16 +229,32 @@ namespace LethalDoors
         }
 
         /// <summary>
-        /// Bring a turret back online after the hijack shutdown. The shutdown is only used as a
-        /// synced carrier for the hijack, so every client immediately powers the turret back up.
+        /// Sentinel passed as "playerWhoTriggered" to mark a berserk broadcast as a HIJACK
+        /// rather than a real berserk. Vanilla only ever sends a real player id (0-3) there, and
+        /// nothing else in the game or in other mods sends this value, so it is an unambiguous
+        /// private message that still rides a vanilla, already-synced RPC.
+        ///
+        /// This replaced using the turret power toggle as the carrier: the facility power system
+        /// (PowerSwitchable) toggles turrets too, so re-enabling on every shutdown made our patch
+        /// fight the breaker and flip the turret on/off forever.
         /// </summary>
-        public static void BringTurretOnline(Turret turret)
+        public const int HijackSignal = 424242;
+
+        /// <summary>Broadcast "this turret has been hijacked" to every client.</summary>
+        public static void BroadcastHijack(Turret turret)
+        {
+            if (turret == null) return;
+            try { turret.EnterBerserkModeServerRpc(HijackSignal); }
+            catch (Exception e) { Plugin.Log.LogError($"BroadcastHijack failed: {e}"); }
+        }
+
+        /// <summary>Cancel the berserk that the carrier RPC would otherwise cause.</summary>
+        public static void CancelBerserk(Turret turret)
         {
             if (turret == null) return;
             try
             {
-                turret.turretActive = true;
-                if (turret.turretAnimator != null) turret.turretAnimator.SetBool("turretActive", true);
+                if (IsBerserk(turret)) turret.SwitchTurretMode(0); // straight back to scanning
             }
             catch { /* ignore */ }
         }
