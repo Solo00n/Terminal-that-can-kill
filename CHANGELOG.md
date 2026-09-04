@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.4.0
+- **Fair AI compatibility: a hijacked turret no longer shoots the crew.** Fair AI replaces the
+  turret AI outright — it sweeps for targets, aims and applies damage in its own methods — so this
+  mod's block on `CheckForPlayersInLineOfSight` never came into play. Worse, driving the turret the
+  vanilla way means writing `targetPlayerWithRotation`, which Fair AI reads as "the target is a
+  player": the mod was effectively handing it the very target it was trying to protect.
+  When Fair AI is installed the turret is now left entirely to it, and the hijack is enforced
+  inside its own pipeline instead — an allied turret finds no players when Fair AI sweeps, refuses
+  a player target, and does not run its player damage. Fair AI already hurts monsters from turrets,
+  so this mod stops doing so as well and the damage is no longer doubled.
+- The whole integration is soft-bound by reflection and does nothing at all unless Fair AI is
+  present, so nothing changes for anyone who does not use it.
+
 ## 1.3.4
 - **Terminal codes now reach traps the game itself cannot see.** Vanilla looks its targets up with
   `FindObjectsOfType<TerminalAccessibleObject>()` — without `includeInactive` — so a trap whose

@@ -43,6 +43,11 @@ namespace LethalDoors.Patches
         {
             if (!AlliedTraps.IsAllied(__instance)) return true; // normal turret -> vanilla
 
+            // Fair AI replaces this method with a prefix of its own and keeps its own target
+            // (player OR monster). Returning false here would cancel its prefix as well and leave
+            // the turret half-driven, so we stand aside and let it aim.
+            if (FairAiCompat.Active) return true;
+
             if (AlliedTraps.TryGetAimTarget(__instance, out var aim))
             {
                 __instance.targetingDeadPlayer = false;

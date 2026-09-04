@@ -145,6 +145,12 @@ namespace LethalDoors.Traps
         {
             float now = Time.time;
 
+            // Fair AI replaces the turret AI end to end: it sweeps for monsters, aims, and deals
+            // the damage itself. Everything below would then be duplicated work at best, and at
+            // worst harmful - it writes targetPlayerWithRotation, which Fair AI reads as "the
+            // target is a player" and would shoot the crew with a turret we just made friendly.
+            bool fairAi = Patches.FairAiCompat.Active;
+
             _scratchTurrets.Clear();
             foreach (var kv in _turrets) _scratchTurrets.Add(kv.Key);
 
@@ -164,6 +170,10 @@ namespace LethalDoors.Traps
                     _turrets.Remove(turret);
                     continue;
                 }
+
+                // Under Fair AI the hijack is enforced by the FairAiCompat patches instead: the
+                // turret simply stops accepting players as targets and stops damaging them.
+                if (fairAi) continue;
 
                 if (now >= s.NextScan)
                 {

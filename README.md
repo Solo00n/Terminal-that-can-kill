@@ -86,6 +86,7 @@ Advanced tuning (zone size <code>DoorwayThickness/Width/Height</code>, close tim
 ### <span style="color: #cc0000;">COMPATIBILITY</span>
 
 - Works on vanilla and modded moons (<strong style="color: #cc0000;">LethalLevelLoader</strong>) — doors are found dynamically, no hard-coded scenes.
+- <strong style="color: #cc0000;">Fair AI</strong> replaces the turret AI; the mod detects it and hands the turrets over, enforcing the hijack inside Fair AI's own pipeline so an allied turret never targets or damages players.
 - No custom network objects; relies on vanilla RPCs — low conflict risk with other terminal mods.
 - If another mod also patches the terminal code function, set <code>EnableRemoteControl = false</code> to avoid overlap.
 
@@ -179,6 +180,7 @@ Output: <code>bin/Release/Solon.TerminalThatCanKill.dll</code>. Game assemblies 
 ### <span style="color: #cc0000;">СОВМЕСТИМОСТЬ</span>
 
 - Работает на ванильных и модовых лунах (<strong style="color: #cc0000;">LethalLevelLoader</strong>) — двери находятся динамически, без хардкода сцен.
+- <strong style="color: #cc0000;">Fair AI</strong> полностью заменяет ИИ турелей; мод определяет его и отдаёт турели ему, встраивая взлом уже внутрь его логики — союзная турель не целится в игроков и не наносит им урона.
 - Не создаёт своих сетевых объектов, опирается на ванильные RPC — низкий риск конфликтов.
 - Если другой мод тоже патчит функцию кода терминала — поставьте <code>EnableRemoteControl = false</code>.
 

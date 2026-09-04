@@ -17,7 +17,7 @@ namespace LethalDoors
     {
         public const string PluginGuid = "Solon.TerminalThatCanKill";
         public const string PluginName = "Terminal that can kill";
-        public const string PluginVersion = "1.3.4";
+        public const string PluginVersion = "1.4.0";
 
         public static Plugin Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }
@@ -37,6 +37,7 @@ namespace LethalDoors
             try
             {
                 _harmony.PatchAll(typeof(Plugin).Assembly);
+                Patches.FairAiCompat.TryPatch(_harmony); // no-op unless Fair AI is installed
                 Log.LogInfo($"{PluginName} v{PluginVersion} loaded — Harmony patches applied.");
             }
             catch (Exception e)
