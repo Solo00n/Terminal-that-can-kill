@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.2
+- **Allied turrets now actually shoot.** They were being forced into Berserk, which is the
+  malfunction spin — no muzzle flash, no firing sound. They now run the completely normal
+  vanilla sequence instead (scan -> warning beep -> track -> fire): the turret is simply handed
+  a monster as its target, via a `SetTargetToPlayerBody` patch that swaps `targetTransform` for
+  an aim marker on the monster. An allied turret behaves exactly like a normal one, it just
+  cannot see players.
+- Allied turrets also respect their own firing arc when picking a monster, so they never lock
+  onto something they cannot physically face.
+- Turret damage is now applied only while the turret is genuinely in its Firing state, so hits
+  line up with the muzzle flash and sound.
+- **A hijack is permanent now.** `AlliedDuration` defaults to `0` — once a trap is yours it
+  stays yours for the rest of the round. Set a number of seconds if you want it to wear off.
+
 ## 1.2.1
 - **Hijacked traps now look hijacked.** An allied turret's laser and an allied mine's blinking
   indicator turn green instead of red (`AlliedTint`). Neither is a field on the script, so the

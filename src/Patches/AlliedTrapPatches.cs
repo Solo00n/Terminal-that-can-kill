@@ -27,6 +27,28 @@ namespace LethalDoors.Patches
     }
 
     /// <summary>
+    /// Point an allied turret at its monster instead of at a player body.
+    ///
+    /// Vanilla Update calls SetTargetToPlayerBody() to derive targetTransform from
+    /// targetPlayerWithRotation, then TurnTowardsTargetIfHasLOS() aims at targetTransform and
+    /// sets hasLineOfSight — which is what lets Charging advance to Firing. By swapping
+    /// targetTransform for our aim marker, the turret runs its completely normal firing
+    /// sequence (warning beep, tracking, muzzle flash, firing SFX) against a monster.
+    /// </summary>
+    [HarmonyPatch(typeof(Turret), "SetTargetToPlayerBody")]
+    internal static class Turret_AimAtMonster_Patch
+    {
+        [HarmonyPrefix]
+        private static bool Prefix(Turret __instance)
+        {
+            if (!AlliedTraps.TryGetAimTarget(__instance, out var aim)) return true;
+            __instance.targetingDeadPlayer = false;
+            __instance.targetTransform = aim;
+            return false; // skip the vanilla player-body lookup
+        }
+    }
+
+    /// <summary>
     /// An allied mine ignores players. Vanilla OnTriggerEnter only ever reacts to the LOCAL
     /// player (and to owned props/ragdolls), so suppressing it entirely while allied means the
     /// mine simply cannot be set off by the team. Monsters are handled by AlliedTraps.Tick,

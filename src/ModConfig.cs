@@ -175,8 +175,9 @@ namespace LethalDoors
                     "from the level seed, so every player gets the same answer and re-entering the code cannot re-roll it.",
                     new AcceptableValueRange<float>(0f, 1f)));
 
-            AlliedDuration = cfg.Bind("AlliedTraps", "AlliedDuration", 60f,
-                new ConfigDescription("Seconds a hijacked trap stays on your side. 0 = for the rest of the round.",
+            AlliedDuration = cfg.Bind("AlliedTraps", "AlliedDuration", 0f,
+                new ConfigDescription("Seconds a hijacked trap stays on your side. 0 (default) = permanent — once a " +
+                    "trap is hijacked it stays yours for the rest of the round.",
                     new AcceptableValueRange<float>(0f, 600f)));
 
             AlliedTurretRange = cfg.Bind("AlliedTraps", "AlliedTurretRange", 30f,

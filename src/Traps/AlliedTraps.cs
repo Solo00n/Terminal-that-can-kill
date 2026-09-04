@@ -22,7 +22,8 @@ namespace LethalDoors.Traps
             public float NextHit;
             public float NextScan;
             public EnemyAI Target;
-            public bool Firing;
+            public bool Engaged;
+            public Transform AimHelper;
         }
 
         private sealed class MineState
@@ -43,6 +44,7 @@ namespace LethalDoors.Traps
 
         public static void Clear()
         {
+            foreach (var kv in _turrets) DestroyHelper(kv.Value);
             _turrets.Clear();
             _mines.Clear();
             TrapVisuals.Clear();
@@ -95,6 +97,23 @@ namespace LethalDoors.Traps
             TrapVisuals.ApplyAllied(mine);
         }
 
+        /// <summary>Aim marker for an engaged allied turret (used by the SetTargetToPlayerBody patch).</summary>
+        public static bool TryGetAimTarget(Turret turret, out Transform aim)
+        {
+            aim = null;
+            if (turret == null || _turrets.Count == 0) return false;
+            if (!_turrets.TryGetValue(turret, out var s)) return false;
+            if (!s.Engaged || s.AimHelper == null || Time.time >= s.Until) return false;
+            aim = s.AimHelper;
+            return true;
+        }
+
+        private static void DestroyHelper(TurretState s)
+        {
+            if (s != null && s.AimHelper != null) Object.Destroy(s.AimHelper.gameObject);
+            if (s != null) s.AimHelper = null;
+        }
+
         public static bool IsAllied(Turret turret)
         {
             if (turret == null || _turrets.Count == 0) return false;
@@ -128,11 +147,13 @@ namespace LethalDoors.Traps
                 if (turret == null) { _turrets.Remove(turret); continue; }
 
                 var s = _turrets[turret];
+                if (s.Target != null && GameCompat.IsEnemyDead(s.Target)) s.Target = null;
                 if (now >= s.Until)
                 {
                     Plugin.Log.LogInfo("Allied turret: hijack expired, back to normal.");
                     TrapVisuals.Restore(turret);
-                    GameCompat.StopTurretFiring(turret);
+                    GameCompat.DisengageTurret(turret);
+                    DestroyHelper(s);
                     _turrets.Remove(turret);
                     continue;
                 }
@@ -147,21 +168,24 @@ namespace LethalDoors.Traps
 
                 if (!hasTarget)
                 {
-                    // Idle: leave the turret in its normal scanning state so the (now green)
-                    // laser sweeps as usual. It cannot acquire players — the
-                    // CheckForPlayersInLineOfSight patch hides them from it.
-                    if (s.Firing) { s.Firing = false; GameCompat.StopTurretFiring(turret); }
+                    // Idle: normal scanning sweep with the (now green) laser. It cannot acquire
+                    // players — the CheckForPlayersInLineOfSight patch hides them from it.
+                    if (s.Engaged) { s.Engaged = false; GameCompat.DisengageTurret(turret); }
                     continue;
                 }
 
-                // Target acquired: berserk is the only firing state that needs no player target,
-                // and with players hidden from the turret it can only hurt monsters.
-                if (!s.Firing) s.Firing = true;
-                GameCompat.KeepTurretFiring(turret);
-                GameCompat.AimTurretAt(turret, s.Target.transform.position + Vector3.up * 0.6f);
+                // Keep the aim marker on the monster. The turret's own TurnTowardsTargetIfHasLOS
+                // will track this transform, so aiming, LOS and the firing arc all stay vanilla.
+                if (s.AimHelper == null)
+                    s.AimHelper = new GameObject("TTCK_AlliedAimTarget").transform;
+                s.AimHelper.position = s.Target.transform.position + Vector3.up * 0.7f;
 
-                // Damage is host-authoritative (the host owns enemy AI).
-                if (GameCompat.IsHost && now >= s.NextHit)
+                s.Engaged = true;
+                GameCompat.EngageTurret(turret); // vanilla Detection -> Charging -> Firing takes over
+
+                // Damage only while it is genuinely in its Firing state, so the hits line up with
+                // the muzzle flash and sound. Host-authoritative (the host owns enemy AI).
+                if (GameCompat.IsHost && GameCompat.IsFiring(turret) && now >= s.NextHit)
                 {
                     s.NextHit = now + Plugin.Config.AlliedTurretHitInterval.Value;
                     GameCompat.HurtEnemy(s.Target, Plugin.Config.AlliedTurretDamage.Value);
@@ -224,9 +248,16 @@ namespace LethalDoors.Traps
                 var enemy = enemies[i];
                 if (enemy == null || GameCompat.IsEnemyDead(enemy)) continue;
 
-                Vector3 aimAt = enemy.transform.position + Vector3.up * 0.6f;
+                Vector3 aimAt = enemy.transform.position + Vector3.up * 0.7f;
                 float sqr = (aimAt - eye.position).sqrMagnitude;
                 if (sqr > bestSqr) continue;
+
+                // Respect the turret's own firing arc, exactly like TurnTowardsTargetIfHasLOS
+                // does — otherwise we would hand it a target it can never face.
+                if (turret.forwardFacingPos != null &&
+                    Vector3.Angle(aimAt - eye.position, turret.forwardFacingPos.forward) > turret.rotationRange)
+                    continue;
+
                 if (!GameCompat.HasLineOfSight(eye.position, aimAt)) continue;
 
                 bestSqr = sqr;

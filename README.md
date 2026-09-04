@@ -4,7 +4,7 @@
 
 ![Lethal Company](https://img.shields.io/badge/Lethal%20Company-V81-cc0000?style=flat-square)
 ![BepInEx](https://img.shields.io/badge/BepInEx-5.4.21%2B-cc0000?style=flat-square)
-![Version](https://img.shields.io/badge/version-1.2.1-cc0000?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.2.2-cc0000?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-cc0000?style=flat-square)
 
 **Language / Язык:** [English](#english) · [Русский](#russian)
@@ -22,7 +22,7 @@ The ship and facility doors slam shut on anyone in the doorway, and the terminal
 - <strong style="color: #cc0000;">Deadly facility doors</strong> — the big terminal-code security doors crush whoever is in the opening when they slam shut.
 - <strong style="color: #cc0000;">Remote mine detonation</strong> — entering a mine code blows it up instead of disabling it; a critical error chain-detonates nearby mines.
 - <strong style="color: #cc0000;">Turret rampage</strong> — entering a turret code sends it berserk (spins and fires at everyone); a critical error extends the rampage.
-- <strong style="color: #cc0000;">Hijacked traps</strong> — a trap can flip to your side: an allied turret stops seeing players entirely and hunts monsters, and an allied mine can no longer be set off by the team and waits for a monster instead.
+- <strong style="color: #cc0000;">Hijacked traps</strong> — a trap can flip to your side: an allied turret behaves like a normal turret but cannot see players, and hunts monsters instead, and an allied mine can no longer be set off by the team and waits for a monster instead.
 - <strong style="color: #cc0000;">Turret head flip</strong> — after leaving berserk a turret smoothly turns its head 180° and rests facing the opposite way.
 - <strong style="color: #cc0000;">Barber-style death</strong> — door kills reuse the Barber (Clay Surgeon) death: the body is launched up and ragdolls.
 - <strong style="color: #cc0000;">Fully configurable</strong> — every mechanic can be tuned or turned off.
@@ -75,7 +75,7 @@ File: <code>BepInEx/config/Solon.TerminalThatCanKill.cfg</code> (created on firs
 <tr><td><code>TurretFlipOnBerserkExit</code></td><td><code>true</code></td><td>Turret head turns 180° after leaving berserk.</td></tr>
 <tr><td><code>EnableAlliedTraps</code></td><td><code>true</code></td><td>Allow a trap command to hijack the trap to your side.</td></tr>
 <tr><td><code>AlliedChance</code></td><td><code>0.25</code></td><td>Chance a trap is hijackable (deterministic per trap).</td></tr>
-<tr><td><code>AlliedDuration</code></td><td><code>60</code></td><td>Seconds a hijacked trap stays allied. 0 = rest of the round.</td></tr>
+<tr><td><code>AlliedDuration</code></td><td><code>0</code></td><td>Seconds a hijacked trap stays allied. 0 = permanent.</td></tr>
 </table>
 
 <blockquote style="border-left: 4px solid #cc0000; padding-left: 15px;">
@@ -114,7 +114,7 @@ Output: <code>bin/Release/Solon.TerminalThatCanKill.dll</code>. Game assemblies 
 - <strong style="color: #cc0000;">Смертельные двери комплекса</strong> — большие двери с кодом раздавливают того, кто стоит в проёме при захлопывании.
 - <strong style="color: #cc0000;">Удалённая детонация мин</strong> — ввод кода мины взрывает её вместо отключения; при критической ошибке детонируют соседние мины.
 - <strong style="color: #cc0000;">Бешенство турели</strong> — ввод кода турели вводит её в берсерк (крутится и стреляет по всем); ошибка продлевает раж.
-- <strong style="color: #cc0000;">Захваченные ловушки</strong> — с некоторым шансом ловушка переходит на вашу сторону: союзная турель полностью перестаёт видеть игроков и охотится на монстров, а союзная мина больше не срабатывает на команду и ждёт монстра.
+- <strong style="color: #cc0000;">Захваченные ловушки</strong> — с некоторым шансом ловушка переходит на вашу сторону: союзная турель работает как обычная, но не видит игроков — и охотится на монстров, а союзная мина больше не срабатывает на команду и ждёт монстра.
 - <strong style="color: #cc0000;">Разворот головы турели</strong> — после берсерка турель плавно поворачивает голову на 180° и остаётся смотреть в другую сторону.
 - <strong style="color: #cc0000;">Смерть как у Barber</strong> — смерть от двери повторяет смерть от Barber (Clay Surgeon): тело подбрасывает вверх.
 - <strong style="color: #cc0000;">Полная настройка</strong> — любую механику можно подстроить или выключить.
@@ -167,7 +167,7 @@ Output: <code>bin/Release/Solon.TerminalThatCanKill.dll</code>. Game assemblies 
 <tr><td><code>TurretFlipOnBerserkExit</code></td><td><code>true</code></td><td>Разворот головы турели на 180° после берсерка.</td></tr>
 <tr><td><code>EnableAlliedTraps</code></td><td><code>true</code></td><td>Разрешить захват ловушки на свою сторону.</td></tr>
 <tr><td><code>AlliedChance</code></td><td><code>0.25</code></td><td>Шанс, что ловушку можно захватить (детерминирован для ловушки).</td></tr>
-<tr><td><code>AlliedDuration</code></td><td><code>60</code></td><td>Сколько секунд ловушка союзная. 0 = до конца раунда.</td></tr>
+<tr><td><code>AlliedDuration</code></td><td><code>0</code></td><td>Сколько секунд ловушка союзная. 0 = навсегда.</td></tr>
 </table>
 
 <blockquote style="border-left: 4px solid #cc0000; padding-left: 15px;">

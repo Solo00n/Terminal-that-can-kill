@@ -176,52 +176,41 @@ namespace LethalDoors
         }
 
         // ================================================================== ALLIED TURRET
+        // An allied turret runs the NORMAL vanilla pipeline (Detection -> Charging -> Firing):
+        // that is what produces the warning beep, the firing SFX and the bullet particles, and
+        // the server syncs the mode change itself. All we do is hand the turret a target and let
+        // it get on with it. Berserk is deliberately NOT used — that is the malfunction spin.
+
+        /// <summary>Turret is in its Firing state (mode 2), i.e. actually shooting.</summary>
+        public static bool IsFiring(Turret turret)
+        {
+            try { return turret != null && (int)turret.turretMode == 2; }
+            catch { return false; }
+        }
+
         /// <summary>
-        /// Hold an allied turret in its firing state. Berserk is the only firing state that
-        /// sustains itself without a player target, and the CheckForPlayersInLineOfSight patch
-        /// stops it hurting players, so it becomes a pure anti-monster gun.
+        /// Give the turret a target so its own state machine engages. targetPlayerWithRotation
+        /// only has to be non-null for Update to enter the targeting branch; what it actually
+        /// aims at is targetTransform, which our SetTargetToPlayerBody patch points at the
+        /// monster.
         /// </summary>
-        public static void KeepTurretFiring(Turret turret)
+        public static void EngageTurret(Turret turret)
         {
             if (turret == null) return;
             try
             {
                 turret.turretActive = true;
-                if (!IsBerserk(turret)) turret.SwitchTurretMode(TurretModeBerserk);
-                SustainBerserk(turret, 2f); // host-only, firing phase only
+                if (turret.targetPlayerWithRotation == null)
+                    turret.targetPlayerWithRotation = LocalPlayer;
             }
             catch { /* ignore */ }
         }
 
-        /// <summary>Drop an allied turret back to normal scanning.</summary>
-        public static void StopTurretFiring(Turret turret)
+        /// <summary>Drop the target so the turret goes back to its normal scanning sweep.</summary>
+        public static void DisengageTurret(Turret turret)
         {
-            if (turret == null || !IsHost) return;
-            try
-            {
-                turret.SwitchTurretMode(0);      // Detection
-                turret.SetToModeClientRpc(0);    // and tell everyone else
-            }
-            catch { /* ignore */ }
-        }
-
-        /// <summary>
-        /// Point an allied turret at a world position. Mirrors what vanilla does when it has a
-        /// target (compass LookAt, then RotateTowards), and runs from our Update postfix so it
-        /// wins over the turret's own scanning rotation for that frame.
-        /// </summary>
-        public static void AimTurretAt(Turret turret, Vector3 worldPoint)
-        {
-            if (turret == null || turret.turretRod == null) return;
-            try
-            {
-                Vector3 dir = worldPoint - turret.turretRod.position;
-                if (dir.sqrMagnitude < 0.0001f) return;
-
-                Quaternion desired = Quaternion.LookRotation(dir);
-                turret.turretRod.rotation = Quaternion.RotateTowards(
-                    turret.turretRod.rotation, desired, 140f * Time.deltaTime);
-            }
+            if (turret == null) return;
+            try { turret.targetPlayerWithRotation = null; }
             catch { /* ignore */ }
         }
 
