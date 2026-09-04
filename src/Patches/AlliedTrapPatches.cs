@@ -74,15 +74,29 @@ namespace LethalDoors.Patches
     // everywhere, still no custom networking.
     // =====================================================================================
 
-    /// <summary>Turret hijack arrives as the vanilla berserk broadcast.</summary>
-    [HarmonyPatch(typeof(Turret), nameof(Turret.EnterBerserkModeClientRpc))]
+    /// <summary>
+    /// Turret hijack arrives as the vanilla "turret powered down" broadcast.
+    ///
+    /// The shutdown is only a carrier: it is the one turret RPC any client may raise that
+    /// reaches everyone, it costs no custom networking, and it sounds exactly like the start of
+    /// a hack. Every client then re-derives the same deterministic roll and, if the trap is
+    /// hijackable, powers it straight back up on your side. Berserk is deliberately not used —
+    /// that would make a hijacked turret spin out instead of behaving normally.
+    /// </summary>
+    [HarmonyPatch(typeof(Turret), "ToggleTurretEnabledLocalClient")]
     internal static class Turret_AlliedSync_Patch
     {
         [HarmonyPostfix]
-        private static void Postfix(Turret __instance)
+        private static void Postfix(Turret __instance, bool enabled)
         {
-            if (AlliedTraps.IsAllied(__instance)) return;
-            if (AlliedTraps.RollAllied(__instance)) AlliedTraps.MakeAllied(__instance);
+            if (enabled) return;                       // only a shutdown can be a hijack
+
+            bool already = AlliedTraps.IsAllied(__instance);
+            if (!already && !AlliedTraps.RollAllied(__instance)) return;
+
+            AlliedTraps.MakeAllied(__instance);
+            GameCompat.BringTurretOnline(__instance);   // the shutdown was just the handshake
+            if (!already) GameCompat.PlayHackCue(__instance);
         }
     }
 
@@ -95,7 +109,10 @@ namespace LethalDoors.Patches
         {
             if (enabled) return;                                  // only a shutdown can be a hijack
             if (AlliedTraps.IsAllied(__instance)) return;
-            if (AlliedTraps.RollAllied(__instance)) AlliedTraps.MakeAllied(__instance);
+            if (!AlliedTraps.RollAllied(__instance)) return;
+
+            AlliedTraps.MakeAllied(__instance);
+            GameCompat.PlayHackCue(__instance);
         }
     }
 }

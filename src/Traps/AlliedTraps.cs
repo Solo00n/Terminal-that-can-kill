@@ -22,6 +22,7 @@ namespace LethalDoors.Traps
             public float NextHit;
             public float NextScan;
             public EnemyAI Target;
+            public int HitForce;
             public bool Engaged;
             public Transform AimHelper;
         }
@@ -41,6 +42,12 @@ namespace LethalDoors.Traps
         // Enemy scans are the only recurring cost this feature adds, so they run a few times
         // a second rather than every frame.
         private const float ScanInterval = 0.25f;
+
+        // Vanilla turrets damage on a 0.21s tick and take a target from full to dead in two of
+        // them (50 damage against 100 player health). An allied turret matches that exactly, so
+        // it is no weaker and no stronger than a normal one — the force is simply scaled to the
+        // monster's health instead of a player's.
+        private const float VanillaFireInterval = 0.21f;
 
         public static void Clear()
         {
@@ -161,7 +168,13 @@ namespace LethalDoors.Traps
                 if (now >= s.NextScan)
                 {
                     s.NextScan = now + ScanInterval;
-                    s.Target = FindEnemyForTurret(turret);
+                    var found = FindEnemyForTurret(turret);
+                    if (found != s.Target)
+                    {
+                        s.Target = found;
+                        // Two ticks to a kill, mirroring what a normal turret does to a player.
+                        s.HitForce = found != null ? Mathf.Max(1, Mathf.CeilToInt(found.enemyHP / 2f)) : 1;
+                    }
                 }
 
                 bool hasTarget = s.Target != null && !GameCompat.IsEnemyDead(s.Target);
@@ -187,8 +200,8 @@ namespace LethalDoors.Traps
                 // the muzzle flash and sound. Host-authoritative (the host owns enemy AI).
                 if (GameCompat.IsHost && GameCompat.IsFiring(turret) && now >= s.NextHit)
                 {
-                    s.NextHit = now + Plugin.Config.AlliedTurretHitInterval.Value;
-                    GameCompat.HurtEnemy(s.Target, Plugin.Config.AlliedTurretDamage.Value);
+                    s.NextHit = now + VanillaFireInterval;
+                    GameCompat.HurtEnemy(s.Target, s.HitForce);
                 }
             }
         }

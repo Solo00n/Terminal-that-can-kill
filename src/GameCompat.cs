@@ -214,6 +214,59 @@ namespace LethalDoors
             catch { /* ignore */ }
         }
 
+        /// <summary>
+        /// Bring a turret back online after the hijack shutdown. The shutdown is only used as a
+        /// synced carrier for the hijack, so every client immediately powers the turret back up.
+        /// </summary>
+        public static void BringTurretOnline(Turret turret)
+        {
+            if (turret == null) return;
+            try
+            {
+                turret.turretActive = true;
+                if (turret.turretAnimator != null) turret.turretAnimator.SetBool("turretActive", true);
+            }
+            catch { /* ignore */ }
+        }
+
+        // ================================================================== HACK CUE
+        /// <summary>
+        /// Audible "successfully hacked" confirmation, built from the trap's own clips: the
+        /// vanilla shutdown sound has just played, so a beat later we play the power-up clip.
+        /// The result reads as powered down -> came back online on your side.
+        /// </summary>
+        public static void PlayHackCue(Turret turret)
+        {
+            if (turret == null || !Plugin.Config.AlliedHackSound.Value) return;
+            if (Plugin.Instance == null) return;
+            Plugin.Instance.StartCoroutine(HackCue(turret.mainAudio, turret.turretActivate));
+        }
+
+        public static void PlayHackCue(Landmine mine)
+        {
+            if (mine == null || !Plugin.Config.AlliedHackSound.Value) return;
+            if (Plugin.Instance == null) return;
+            Plugin.Instance.StartCoroutine(HackCue(mine.mineAudio, mine.minePress));
+        }
+
+        private static System.Collections.IEnumerator HackCue(AudioSource source, AudioClip clip)
+        {
+            yield return new WaitForSeconds(0.35f);
+            if (source == null || clip == null) yield break;
+
+            float pitch = source.pitch;
+            try
+            {
+                source.pitch = 1.25f;                 // higher = "handshake accepted"
+                source.PlayOneShot(clip, 0.9f);
+                WalkieTalkie.TransmitOneShotAudio(source, clip);
+            }
+            catch { /* ignore */ }
+
+            yield return new WaitForSeconds(0.12f);
+            if (source != null) source.pitch = pitch;
+        }
+
         /// <summary>Host-side damage to an enemy (host owns enemy AI, so this syncs).</summary>
         public static void HurtEnemy(EnemyAI enemy, int force)
         {

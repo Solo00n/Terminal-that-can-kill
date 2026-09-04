@@ -106,9 +106,11 @@ namespace LethalDoors.Traps
             // Hijack takes priority over the berserk/disable outcome.
             if (AlliedTraps.RollAllied(turret))
             {
-                // The berserk broadcast is our synced carrier: every client receives it and
-                // re-derives the same hijack roll (see Turret_AlliedSync_Patch).
-                GameCompat.BerserkTurret(turret);
+                // Power the turret down: that is our synced carrier (every client receives it and
+                // re-derives the same hijack roll, then brings it straight back online). It also
+                // sounds like a hack, and unlike the berserk broadcast it does NOT make the
+                // hijacked turret spin out.
+                GameCompat.DisableTurret(turret);
                 AlliedTraps.MakeAllied(turret);
                 Plugin.Log.LogInfo("Remote turret HIJACKED — it now ignores players and hunts monsters.");
                 return true;

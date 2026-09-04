@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.0
+- **Hijacking a turret no longer sends it berserk.** The hijack used the berserk broadcast as
+  its sync carrier, so the turret really did spin out for a moment. It now travels on the
+  turret's "powered down" broadcast instead — which every client receives, needs no custom
+  networking, and doubles as the sound of a hack.
+- **Audible hack confirmation** (`AlliedHackSound`): the trap powers down and a beat later comes
+  back online on your side, built from the trap's own clips.
+- **An allied turret now does exactly the damage a normal one does.** A vanilla turret kills on
+  a 0.21s tick in two hits; an allied turret matches that tick and scales its force to the
+  monster's health, so it is neither weaker nor stronger than a normal turret.
+  `AlliedTurretDamage` and `AlliedTurretHitInterval` are gone — there is nothing left to tune
+  because there is no longer any difference.
+
 ## 1.2.2
 - **Allied turrets now actually shoot.** They were being forced into Berserk, which is the
   malfunction spin — no muzzle flash, no firing sound. They now run the completely normal

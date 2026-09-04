@@ -56,9 +56,8 @@ namespace LethalDoors
         public readonly ConfigEntry<float> AlliedChance;
         public readonly ConfigEntry<float> AlliedDuration;
         public readonly ConfigEntry<float> AlliedTurretRange;
-        public readonly ConfigEntry<int> AlliedTurretDamage;
-        public readonly ConfigEntry<float> AlliedTurretHitInterval;
         public readonly ConfigEntry<float> AlliedMineTriggerRadius;
+        public readonly ConfigEntry<bool> AlliedHackSound;
         public readonly ConfigEntry<bool> AlliedTint;
 
         // ---- [RemoteControl.Advanced] ---------------------------------------
@@ -184,18 +183,14 @@ namespace LethalDoors
                 new ConfigDescription("How far (metres) an allied turret looks for monsters.",
                     new AcceptableValueRange<float>(5f, 80f)));
 
-            AlliedTurretDamage = cfg.Bind("AlliedTraps", "AlliedTurretDamage", 1,
-                new ConfigDescription("Damage per hit an allied turret deals to a monster (enemy HP is small, " +
-                    "most have 3-8).", new AcceptableValueRange<int>(1, 10)));
-
-            AlliedTurretHitInterval = cfg.Bind("AlliedTraps", "AlliedTurretHitInterval", 0.4f,
-                new ConfigDescription("Seconds between an allied turret's hits on its target.",
-                    new AcceptableValueRange<float>(0.05f, 3f)));
-
             AlliedMineTriggerRadius = cfg.Bind("AlliedTraps", "AlliedMineTriggerRadius", 2.5f,
                 new ConfigDescription("How close (metres) a monster must get before an allied mine goes off. " +
                     "The blast itself is still a real explosion, so do not stand next to it.",
                     new AcceptableValueRange<float>(0.5f, 10f)));
+
+            AlliedHackSound = cfg.Bind("AlliedTraps", "AlliedHackSound", true,
+                "Play an audible confirmation when a trap is successfully hijacked (it powers down, then comes " +
+                "back online on your side).");
 
             AlliedTint = cfg.Bind("AlliedTraps", "AlliedTint", true,
                 "Recolour a hijacked trap green (turret laser, mine indicator) so you can tell it is on your side.");
