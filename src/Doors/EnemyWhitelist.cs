@@ -21,7 +21,7 @@ namespace LethalDoors.Doors
             if (raw == _cachedRaw) return;
             _cachedRaw = raw;
             _excluded = raw.Split(',')
-                .Select(s => s.Trim().ToLowerInvariant())
+                .Select(s => s.Trim())
                 .Where(s => s.Length > 0)
                 .ToArray();
         }
@@ -36,10 +36,15 @@ namespace LethalDoors.Doors
             if (enemy == null || GameCompat.IsEnemyDead(enemy)) return false;
 
             RefreshCache();
-            string name = GameCompat.EnemyName(enemy).ToLowerInvariant();
+            if (_excluded.Length == 0) return true;
 
-            foreach (var token in _excluded)
-                if (name.Contains(token))
+            // Matched case-insensitively against the name as it is, rather than lower-casing a
+            // copy of it: this runs once per enemy per door close, and the copy was pure garbage.
+            string name = GameCompat.EnemyName(enemy);
+            if (string.IsNullOrEmpty(name)) return true;
+
+            for (int i = 0; i < _excluded.Length; i++)
+                if (name.IndexOf(_excluded[i], StringComparison.OrdinalIgnoreCase) >= 0)
                     return false;
 
             return true;

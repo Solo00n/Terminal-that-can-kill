@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.4.1
+Performance pass. No behaviour changes — the mod does the same things, it just stops paying for
+them every frame.
+- **Turret head flip no longer costs anything until a turret goes berserk.** Its hook runs on
+  every turret on every frame, and it was looking up a dictionary keyed by a Unity object before
+  it knew whether there was anything to do. It now answers the idle case with a single field
+  read, only creates per-turret state at the moment a turret actually goes berserk, and drops
+  state for turrets that have been destroyed — which matters on levels where traps are spawned
+  and destroyed in waves.
+- **A shut facility door stopped being per-frame work.** After the crush it stayed in the tracking
+  list for the rest of the round, rebuilding its kill zone from the door transform every single
+  frame. It is untracked instead; reopening re-registers it, so nothing is missed.
+- **The ship door stops querying its animator once it is shut.** The state check hashed a string
+  natively on every frame the door was closed, and the kill zone was rebuilt just as often even
+  though nothing it is built from moves.
+- **Terminal codes scan the scene once instead of twice.** `FindObjectsOfType` over a whole modded
+  level is not cheap, and the second scan only mattered when a trap was hidden from the vanilla
+  lookup — which can now be ruled out without it.
+- **What a terminal code belongs to is worked out once and remembered.** Six hierarchy searches
+  were being repeated on every code entered and on every door toggle, on every client.
+- Smaller ones: no string garbage per monster when a door closes, no throwaway arrays per renderer
+  when a trap is tinted, and shader properties resolved once instead of by name each time.
+- **New `[General] VerboseLogging` (default off).** The per-event diagnostics — most of all the
+  door offset line used to tune `DoorwayThickness` — were written to disk on every door close for
+  every player. They now need this switch.
+
 ## 1.4.0
 - **Fair AI compatibility: a hijacked turret no longer shoots the crew.** Fair AI replaces the
   turret AI outright — it sweeps for targets, aims and applies damage in its own methods — so this

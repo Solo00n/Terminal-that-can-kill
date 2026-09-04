@@ -23,6 +23,9 @@ namespace LethalDoors
     /// </summary>
     internal sealed class ModConfig
     {
+        // ---- [General] --------------------------------------------------------
+        public readonly ConfigEntry<bool> VerboseLogging;
+
         // ---- [Doors] core -----------------------------------------------------
         public readonly ConfigEntry<bool> Enabled;
         public readonly ConfigEntry<bool> KillPlayers;
@@ -67,6 +70,13 @@ namespace LethalDoors
 
         public ModConfig(ConfigFile cfg)
         {
+            // ---------------------------------------------------------------- General
+            VerboseLogging = cfg.Bind("General", "VerboseLogging", false,
+                "Write per-event diagnostics to the BepInEx log — most usefully the exact offset " +
+                "between you and a door's kill zone, which is what DoorwayThickness/Width/Height are " +
+                "tuned against. Off by default: the log is written to disk synchronously, so on a busy " +
+                "level it costs frames for output nobody reads.");
+
             // ---------------------------------------------------------------- Doors (core)
             Enabled = cfg.Bind("Doors", "Enabled", true,
                 "Master switch for the deadly-doors mechanic.");

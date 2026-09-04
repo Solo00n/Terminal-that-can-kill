@@ -18,7 +18,6 @@ namespace LethalDoors.Doors
         {
             public TerminalAccessibleObject Door;
             public float CloseTime;
-            public bool Crushed;
             public float DotAccumulator;
         }
 
@@ -34,14 +33,14 @@ namespace LethalDoors.Doors
                 if (_tracked[i].Door == door)
                 {
                     _tracked[i].CloseTime = Time.time;
-                    _tracked[i].Crushed = false;
                     _tracked[i].DotAccumulator = 0f;
                     return;
                 }
             }
 
             _tracked.Add(new Tracked { Door = door, CloseTime = Time.time });
-            Plugin.Log.LogInfo($"Terminal door '{door.gameObject.name}' closing — tracking for crush.");
+            if (Plugin.Verbose)
+                Plugin.Log.LogInfo($"Terminal door '{door.gameObject.name}' closing — tracking for crush.");
         }
 
         /// <summary>Per-frame processing of all currently-closing terminal doors.</summary>
@@ -64,17 +63,19 @@ namespace LethalDoors.Doors
 
                 if (Time.time - t.CloseTime < closeSeconds) continue; // still animating shut
 
-                DoorZone zone = BuildTerminalZone(t.Door);
-
                 if (Plugin.Config.DamageMode.Value == DamageMode.DamageOverTime)
                 {
-                    DoorCrushManager.ExecuteDamageTick(DoorKind.Terminal, zone, ref t.DotAccumulator);
+                    DoorCrushManager.ExecuteDamageTick(
+                        DoorKind.Terminal, BuildTerminalZone(t.Door), ref t.DotAccumulator);
+                    continue;
                 }
-                else if (!t.Crushed)
-                {
-                    t.Crushed = true;
-                    DoorCrushManager.ExecuteCrush(DoorKind.Terminal, zone);
-                }
+
+                // Instant kill happens once. Stop tracking instead of latching a flag: a shut
+                // door used to stay in this list for the rest of the round and rebuild its zone
+                // every single frame for nothing. Reopening calls OnClosed again anyway, so the
+                // next close is still caught.
+                DoorCrushManager.ExecuteCrush(DoorKind.Terminal, BuildTerminalZone(t.Door));
+                _tracked.RemoveAt(i);
             }
         }
 

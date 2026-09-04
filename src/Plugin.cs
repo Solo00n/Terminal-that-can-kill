@@ -17,7 +17,7 @@ namespace LethalDoors
     {
         public const string PluginGuid = "Solon.TerminalThatCanKill";
         public const string PluginName = "Terminal that can kill";
-        public const string PluginVersion = "1.4.0";
+        public const string PluginVersion = "1.4.1";
 
         public static Plugin Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }
@@ -25,6 +25,12 @@ namespace LethalDoors
         // 'new' silences CS0108: this static config intentionally shadows the
         // inherited BaseUnityPlugin.Config instance property for convenient access.
         internal static new ModConfig Config { get; private set; }
+
+        /// <summary>
+        /// Per-event diagnostics switch. Checked at the CALL SITE, before building the message,
+        /// so a disabled log costs one bool read instead of an interpolated string.
+        /// </summary>
+        internal static bool Verbose => Config != null && Config.VerboseLogging.Value;
 
         private readonly Harmony _harmony = new Harmony(PluginGuid);
 

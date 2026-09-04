@@ -30,8 +30,24 @@ namespace LethalDoors.Patches
                 var all = Object.FindObjectsOfType<TerminalAccessibleObject>(true);
                 if (all == null || all.Length == 0) return;
 
-                // Exactly what vanilla just handled — compared by identity rather than by guessing
-                // Unity's active/enabled rules.
+                // Scanning the whole scene is expensive, and this used to do it twice on every
+                // single code typed. An object that is active AND enabled is in the vanilla
+                // lookup whichever way Unity filters, so unless a MATCHING object is hidden there
+                // is nothing here for us and the second scan is pure waste.
+                bool anyHidden = false;
+                for (int i = 0; i < all.Length; i++)
+                {
+                    var tao = all[i];
+                    if (tao != null && !tao.isActiveAndEnabled && tao.objectCode == word)
+                    {
+                        anyHidden = true;
+                        break;
+                    }
+                }
+                if (!anyHidden) return;
+
+                // Something is hidden: now it is worth asking exactly what vanilla saw, compared
+                // by identity rather than by guessing Unity's active/enabled rules.
                 var handled = new HashSet<TerminalAccessibleObject>(
                     Object.FindObjectsOfType<TerminalAccessibleObject>());
 

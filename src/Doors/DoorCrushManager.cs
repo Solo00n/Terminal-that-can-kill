@@ -33,9 +33,11 @@ namespace LethalDoors.Doors
                         GameCompat.KillLocalPlayer(local, cfg.PlayerDeathAnimationId.Value);
                         Plugin.Log.LogInfo($"{kind} door crushed local player.");
                     }
-                    else
+                    else if (Plugin.Verbose)
                     {
-                        // Local offset helps verify the zone is positioned/oriented right.
+                        // Tuning aid for the zone size — off unless VerboseLogging is on, since it
+                        // fires on every door close for every player and formats three floats and
+                        // a Vector3 to build a line nobody normally reads.
                         Vector3 l = zone.ToLocal(local.transform.position);
                         Plugin.Log.LogInfo(
                             $"{kind} door closed: local player not in doorway. " +

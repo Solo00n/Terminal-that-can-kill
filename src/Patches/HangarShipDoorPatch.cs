@@ -31,6 +31,13 @@ namespace LethalDoors.Patches
         private static bool _crushed;
         private static float _dotAccumulator;
 
+        // Latched for the duration of one close cycle. The animator query below marshals a string
+        // into a native hash on every call, and the zone is built from transforms that do not move
+        // while the door is shut — so both are done once per close instead of once per frame.
+        private static bool _fullyClosed;
+        private static bool _zoneValid;
+        private static DoorZone _zone;
+
         [HarmonyPostfix]
         private static void Postfix(HangarShipDoor __instance)
         {
@@ -46,32 +53,38 @@ namespace LethalDoors.Patches
                 _closeTimer = -1f;
                 _crushed = false;
                 _dotAccumulator = 0f;
+                _fullyClosed = false;
+                _zoneValid = false;
                 return;
             }
 
             _closeTimer = _closeTimer < 0f ? 0f : _closeTimer + Time.deltaTime;
 
             // Fully shut once the animator reaches the closed state, or after the fallback time.
-            bool animClosed = false;
-            var anim = __instance.shipDoorsAnimator;
-            if (anim != null)
+            if (!_fullyClosed)
             {
-                var st = anim.GetCurrentAnimatorStateInfo(0);
-                animClosed = st.IsName(ClosedStateName);
+                bool animClosed = false;
+                var anim = __instance.shipDoorsAnimator;
+                if (anim != null)
+                    animClosed = anim.GetCurrentAnimatorStateInfo(0).IsName(ClosedStateName);
+
+                _fullyClosed = animClosed || _closeTimer >= Plugin.Config.ShipDoorCloseSeconds.Value;
+                if (!_fullyClosed) return;
             }
-            bool fullyClosed = animClosed || _closeTimer >= Plugin.Config.ShipDoorCloseSeconds.Value;
-            if (!fullyClosed) return;
 
-            DoorZone zone = BuildShipZone(__instance);
+            bool overTime = Plugin.Config.DamageMode.Value == DamageMode.DamageOverTime;
+            if (!overTime && _crushed) return; // instant kill already resolved for this close
 
-            if (Plugin.Config.DamageMode.Value == DamageMode.DamageOverTime)
+            if (!_zoneValid) { _zone = BuildShipZone(__instance); _zoneValid = true; }
+
+            if (overTime)
             {
-                DoorCrushManager.ExecuteDamageTick(DoorKind.Ship, zone, ref _dotAccumulator);
+                DoorCrushManager.ExecuteDamageTick(DoorKind.Ship, _zone, ref _dotAccumulator);
             }
-            else if (!_crushed)
+            else
             {
                 _crushed = true;
-                DoorCrushManager.ExecuteCrush(DoorKind.Ship, zone);
+                DoorCrushManager.ExecuteCrush(DoorKind.Ship, _zone);
             }
         }
 

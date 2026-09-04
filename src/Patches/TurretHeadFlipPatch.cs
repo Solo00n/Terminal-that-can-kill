@@ -40,6 +40,7 @@ namespace LethalDoors.Patches
         }
 
         private static readonly Dictionary<Turret, State> _states = new Dictionary<Turret, State>();
+        private static readonly List<Turret> _dead = new List<Turret>();
 
         /// <summary>Wipe per-turret state on a new round (turrets are recreated each level).</summary>
         public static void ClearStates() => _states.Clear();
@@ -47,23 +48,33 @@ namespace LethalDoors.Patches
         [HarmonyPostfix]
         private static void Postfix(Turret __instance)
         {
+            // This runs for EVERY turret on EVERY frame, so the idle case has to be almost free.
+            // Until some turret has actually gone berserk there is nothing to remember and
+            // nothing to hold, and an empty dictionary answers that with one field read — no
+            // config lookup, no hashing of a Unity object, no exception frame.
+            int mode = (int)__instance.turretMode;
+            if (mode != Berserk && _states.Count == 0) return;
+
             if (!Plugin.Config.TurretFlipOnBerserkExit.Value) return;
             // An allied turret aims itself at monsters; don't fight it over turretRod.
             if (Traps.AlliedTraps.IsAllied(__instance)) return;
-            try { Process(__instance); }
+
+            try { Process(__instance, mode); }
             catch (Exception e) { Plugin.Log.LogError($"Turret head flip error: {e}"); }
         }
 
-        private static void Process(Turret turret)
+        private static void Process(Turret turret, int mode)
         {
             if (!_states.TryGetValue(turret, out var s))
             {
-                s = new State { Head = FindHead(turret), PrevMode = (int)turret.turretMode };
+                // Only a turret that is going berserk right now is worth a state entry.
+                if (mode != Berserk) return;
+
+                Prune(); // rare enough to sweep destroyed turrets here rather than on a timer
+                s = new State { Head = FindHead(turret), PrevMode = Detection };
                 _states[turret] = s;
             }
-            if (s.Head == null) return;
-
-            int mode = (int)turret.turretMode;
+            if (s.Head == null) { _states.Remove(turret); return; }
 
             // --- transitions ---
             if (s.PrevMode != Berserk && mode == Berserk)
@@ -117,7 +128,28 @@ namespace LethalDoors.Patches
         private static void SetYaw(Transform head, float yaw)
         {
             Vector3 e = head.localEulerAngles;
+            // Writing localEulerAngles dirties the transform hierarchy, so skip the write when
+            // the head is already where we want it.
+            if (Mathf.Abs(Mathf.DeltaAngle(e.y, yaw)) < 0.01f) return;
             head.localEulerAngles = new Vector3(e.x, yaw, e.z);
+        }
+
+        /// <summary>
+        /// Drop entries for turrets that no longer exist. Their Update stopped running, so they
+        /// would otherwise sit in the dictionary for the rest of the round and slow down the
+        /// lookup every other turret does each frame — which adds up on levels where traps are
+        /// spawned and destroyed in waves.
+        /// </summary>
+        private static void Prune()
+        {
+            if (_states.Count == 0) return;
+
+            _dead.Clear();
+            foreach (var kv in _states)
+                if (kv.Key == null) _dead.Add(kv.Key);
+
+            for (int i = 0; i < _dead.Count; i++) _states.Remove(_dead[i]);
+            _dead.Clear();
         }
 
         private static float Normalize(float angle) => Mathf.Repeat(angle, 360f);

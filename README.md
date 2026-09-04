@@ -77,6 +77,7 @@ File: <code>BepInEx/config/Solon.TerminalThatCanKill.cfg</code> (created on firs
 <tr><td><code>EnableAlliedTraps</code></td><td><code>true</code></td><td>Allow a trap command to hijack the trap to your side.</td></tr>
 <tr><td><code>AlliedChance</code></td><td><code>0.25</code></td><td>Chance a trap command hijacks the trap instead. Rolled per command.</td></tr>
 <tr><td><code>AlliedDuration</code></td><td><code>0</code></td><td>Seconds a hijacked trap stays allied. 0 = permanent.</td></tr>
+<tr><td><code>VerboseLogging</code></td><td><code>false</code></td><td>Per-event diagnostics in the log, including the offset used to tune the kill zone.</td></tr>
 </table>
 
 <blockquote style="border-left: 4px solid #cc0000; padding-left: 15px;">
@@ -171,6 +172,7 @@ Output: <code>bin/Release/Solon.TerminalThatCanKill.dll</code>. Game assemblies 
 <tr><td><code>EnableAlliedTraps</code></td><td><code>true</code></td><td>Разрешить захват ловушки на свою сторону.</td></tr>
 <tr><td><code>AlliedChance</code></td><td><code>0.25</code></td><td>Шанс, что команда захватит ловушку. Бросается на каждую команду.</td></tr>
 <tr><td><code>AlliedDuration</code></td><td><code>0</code></td><td>Сколько секунд ловушка союзная. 0 = навсегда.</td></tr>
+<tr><td><code>VerboseLogging</code></td><td><code>false</code></td><td>Подробные логи, включая смещение для настройки зоны убийства.</td></tr>
 </table>
 
 <blockquote style="border-left: 4px solid #cc0000; padding-left: 15px;">

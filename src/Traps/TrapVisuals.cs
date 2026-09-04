@@ -24,7 +24,19 @@ namespace LethalDoors.Traps
             "_EmissiveColor", "_EmissionColor", "_BaseColor", "_Color", "_UnlitColor"
         };
 
+        // Resolved once. Every HasProperty/GetColor call taking a string hashes it natively, and a
+        // modded turret can carry dozens of materials.
+        private static readonly int[] ColorPropIds = BuildPropIds();
+
         private static readonly MaterialPropertyBlock _block = new MaterialPropertyBlock();
+        private static readonly List<Material> _matBuffer = new List<Material>();
+
+        private static int[] BuildPropIds()
+        {
+            var ids = new int[ColorProps.Length];
+            for (int i = 0; i < ColorProps.Length; i++) ids[i] = Shader.PropertyToID(ColorProps[i]);
+            return ids;
+        }
 
         private sealed class Record
         {
@@ -121,27 +133,28 @@ namespace LethalDoors.Traps
         // ------------------------------------------------------------------ helpers
         private static void TintRenderer(Renderer r, Record rec, bool requireRed)
         {
-            var mats = r.sharedMaterials;          // shared: never instantiate a copy
-            if (mats == null) return;
+            // Into a reusable list rather than r.sharedMaterials, which hands back a fresh array
+            // every time it is read. Shared either way: never instantiate a copy.
+            r.GetSharedMaterials(_matBuffer);
+            if (_matBuffer.Count == 0) return;
 
             r.GetPropertyBlock(_block);            // keep whatever a skin system already set
             bool touched = false;
 
-            for (int m = 0; m < mats.Length; m++)
+            for (int m = 0; m < _matBuffer.Count; m++)
             {
-                var mat = mats[m];
+                var mat = _matBuffer[m];
                 if (mat == null) continue;
 
-                for (int p = 0; p < ColorProps.Length; p++)
+                for (int p = 0; p < ColorPropIds.Length; p++)
                 {
-                    string prop = ColorProps[p];
-                    if (!mat.HasProperty(prop)) continue;
+                    int id = ColorPropIds[p];
+                    if (!mat.HasProperty(id)) continue;
 
-                    Color c = mat.GetColor(prop);
+                    Color c = mat.GetColor(id);
                     if (requireRed && !IsDominantlyRed(c)) continue;
                     if (c.maxColorComponent <= 0.001f) continue; // black/unused slot
 
-                    int id = Shader.PropertyToID(prop);
                     rec.Renderers.Add(r);
                     rec.Props.Add(id);
                     rec.Colors.Add(c);
@@ -150,6 +163,7 @@ namespace LethalDoors.Traps
                 }
             }
 
+            _matBuffer.Clear();
             if (touched) r.SetPropertyBlock(_block);
         }
 
