@@ -59,6 +59,7 @@ namespace LethalDoors
         public readonly ConfigEntry<int> AlliedTurretDamage;
         public readonly ConfigEntry<float> AlliedTurretHitInterval;
         public readonly ConfigEntry<float> AlliedMineTriggerRadius;
+        public readonly ConfigEntry<bool> AlliedTint;
 
         // ---- [RemoteControl.Advanced] ---------------------------------------
         public readonly ConfigEntry<float> MineErrorChainRadius;
@@ -194,6 +195,9 @@ namespace LethalDoors
                 new ConfigDescription("How close (metres) a monster must get before an allied mine goes off. " +
                     "The blast itself is still a real explosion, so do not stand next to it.",
                     new AcceptableValueRange<float>(0.5f, 10f)));
+
+            AlliedTint = cfg.Bind("AlliedTraps", "AlliedTint", true,
+                "Recolour a hijacked trap green (turret laser, mine indicator) so you can tell it is on your side.");
 
             // ---------------------------------------------------------------- RemoteControl.Advanced
             MineErrorChainRadius = cfg.Bind("RemoteControl.Advanced", "MineErrorChainRadius", 8.0f,

@@ -41,4 +41,39 @@ namespace LethalDoors.Patches
             return !AlliedTraps.IsAllied(__instance); // false = skip vanilla trigger
         }
     }
+
+    // =====================================================================================
+    // Making the hijack known to EVERY client.
+    //
+    // The terminal only runs CallFunctionFromTerminal on the client that typed the code, so
+    // registering the hijack there alone would leave the trap hostile for everyone else.
+    // Instead the hijack fires a vanilla RPC that the game already syncs, and each client
+    // re-derives "is this trap hijackable?" from the deterministic roll. Same answer
+    // everywhere, still no custom networking.
+    // =====================================================================================
+
+    /// <summary>Turret hijack arrives as the vanilla berserk broadcast.</summary>
+    [HarmonyPatch(typeof(Turret), nameof(Turret.EnterBerserkModeClientRpc))]
+    internal static class Turret_AlliedSync_Patch
+    {
+        [HarmonyPostfix]
+        private static void Postfix(Turret __instance)
+        {
+            if (AlliedTraps.IsAllied(__instance)) return;
+            if (AlliedTraps.RollAllied(__instance)) AlliedTraps.MakeAllied(__instance);
+        }
+    }
+
+    /// <summary>Mine hijack arrives as the vanilla "mine deactivated" broadcast.</summary>
+    [HarmonyPatch(typeof(Landmine), nameof(Landmine.ToggleMineEnabledLocalClient))]
+    internal static class Landmine_AlliedSync_Patch
+    {
+        [HarmonyPostfix]
+        private static void Postfix(Landmine __instance, bool enabled)
+        {
+            if (enabled) return;                                  // only a shutdown can be a hijack
+            if (AlliedTraps.IsAllied(__instance)) return;
+            if (AlliedTraps.RollAllied(__instance)) AlliedTraps.MakeAllied(__instance);
+        }
+    }
 }

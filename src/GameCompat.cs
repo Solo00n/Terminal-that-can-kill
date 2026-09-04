@@ -163,6 +163,18 @@ namespace LethalDoors
             catch (Exception e) { Plugin.Log.LogError($"DisableTurret failed: {e}"); }
         }
 
+        /// <summary>
+        /// Vanilla "deactivate mine". Goes through ToggleMineServerRpc, so it reaches every
+        /// client, and it flips the flag the game itself checks before detonating on a player.
+        /// Detonate() does NOT check that flag, so we can still set the mine off on monsters.
+        /// </summary>
+        public static void DisableMine(Landmine mine)
+        {
+            if (mine == null) return;
+            try { mine.ToggleMine(false); }
+            catch (Exception e) { Plugin.Log.LogError($"DisableMine failed: {e}"); }
+        }
+
         // ================================================================== ALLIED TURRET
         /// <summary>
         /// Hold an allied turret in its firing state. Berserk is the only firing state that

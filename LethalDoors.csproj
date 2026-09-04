@@ -9,7 +9,7 @@
     <AssemblyName>Solon.TerminalThatCanKill</AssemblyName>
     <Product>Terminal that can kill</Product>
     <Authors>Solon</Authors>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
     <RootNamespace>LethalDoors</RootNamespace>
 
     <!-- Generates the BepInEx PluginInfo class (PluginInfo.PLUGIN_GUID etc.). -->

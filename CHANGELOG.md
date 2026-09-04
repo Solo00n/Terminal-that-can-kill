@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.1
+- **Hijacked traps now look hijacked.** An allied turret's laser and an allied mine's blinking
+  indicator turn green instead of red (`AlliedTint`). Neither is a field on the script, so the
+  lights/line renderers and the dominantly-red indicator materials are found in the prefab at
+  runtime and restored when the hijack ends.
+- **Allied turrets idle properly.** They stay in their normal scanning state (green laser
+  sweeping) and only switch to firing once a monster is actually in sight, instead of spinning
+  and firing non-stop.
+- **Fixed the hijack not reaching other players.** The terminal only runs the code on the client
+  that typed it, so remote clients still saw a hostile trap. The hijack now travels on a vanilla
+  synced RPC (turret berserk broadcast / mine deactivate broadcast) and every client re-derives
+  the same deterministic roll from it.
+
 ## 1.2.0
 - **New: hijacked (allied) traps.** A terminal trap command can now flip the trap to your side
   instead of detonating it. An allied turret stops seeing players entirely and hunts monsters;

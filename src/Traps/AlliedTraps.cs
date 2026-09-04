@@ -22,6 +22,7 @@ namespace LethalDoors.Traps
             public float NextHit;
             public float NextScan;
             public EnemyAI Target;
+            public bool Firing;
         }
 
         private sealed class MineState
@@ -44,6 +45,7 @@ namespace LethalDoors.Traps
         {
             _turrets.Clear();
             _mines.Clear();
+            TrapVisuals.Clear();
         }
 
         // ------------------------------------------------------------------ roll
@@ -82,6 +84,7 @@ namespace LethalDoors.Traps
             if (turret == null) return;
             if (!_turrets.TryGetValue(turret, out var s)) { s = new TurretState(); _turrets[turret] = s; }
             s.Until = ExpiryFromConfig();
+            TrapVisuals.ApplyAllied(turret);
         }
 
         public static void MakeAllied(Landmine mine)
@@ -89,6 +92,7 @@ namespace LethalDoors.Traps
             if (mine == null) return;
             if (!_mines.TryGetValue(mine, out var s)) { s = new MineState(); _mines[mine] = s; }
             s.Until = ExpiryFromConfig();
+            TrapVisuals.ApplyAllied(mine);
         }
 
         public static bool IsAllied(Turret turret)
@@ -127,15 +131,11 @@ namespace LethalDoors.Traps
                 if (now >= s.Until)
                 {
                     Plugin.Log.LogInfo("Allied turret: hijack expired, back to normal.");
+                    TrapVisuals.Restore(turret);
                     GameCompat.StopTurretFiring(turret);
                     _turrets.Remove(turret);
                     continue;
                 }
-
-                // Keep it visually firing. Berserk is the only self-sustaining firing state that
-                // needs no player target; with the CheckForPlayersInLineOfSight patch in place it
-                // can no longer hurt players.
-                GameCompat.KeepTurretFiring(turret);
 
                 if (now >= s.NextScan)
                 {
@@ -143,8 +143,21 @@ namespace LethalDoors.Traps
                     s.Target = FindEnemyForTurret(turret);
                 }
 
-                if (s.Target == null || GameCompat.IsEnemyDead(s.Target)) continue;
+                bool hasTarget = s.Target != null && !GameCompat.IsEnemyDead(s.Target);
 
+                if (!hasTarget)
+                {
+                    // Idle: leave the turret in its normal scanning state so the (now green)
+                    // laser sweeps as usual. It cannot acquire players — the
+                    // CheckForPlayersInLineOfSight patch hides them from it.
+                    if (s.Firing) { s.Firing = false; GameCompat.StopTurretFiring(turret); }
+                    continue;
+                }
+
+                // Target acquired: berserk is the only firing state that needs no player target,
+                // and with players hidden from the turret it can only hurt monsters.
+                if (!s.Firing) s.Firing = true;
+                GameCompat.KeepTurretFiring(turret);
                 GameCompat.AimTurretAt(turret, s.Target.transform.position + Vector3.up * 0.6f);
 
                 // Damage is host-authoritative (the host owns enemy AI).
@@ -173,7 +186,7 @@ namespace LethalDoors.Traps
                 if (mine == null) { _mines.Remove(mine); continue; }
 
                 var s = _mines[mine];
-                if (now >= s.Until) { _mines.Remove(mine); continue; }
+                if (now >= s.Until) { TrapVisuals.Restore(mine); _mines.Remove(mine); continue; }
                 if (now < s.NextScan) continue;
                 s.NextScan = now + ScanInterval;
 
@@ -188,6 +201,7 @@ namespace LethalDoors.Traps
                     if ((enemy.transform.position - pos).sqrMagnitude > sqr) continue;
 
                     Plugin.Log.LogInfo($"Allied mine detonating on '{GameCompat.EnemyName(enemy)}'.");
+                    TrapVisuals.Restore(mine);
                     GameCompat.DetonateMine(mine);
                     _mines.Remove(mine);
                     break;
