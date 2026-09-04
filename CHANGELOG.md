@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.3.4
+- **Terminal codes now reach traps the game itself cannot see.** Vanilla looks its targets up with
+  `FindObjectsOfType<TerminalAccessibleObject>()` — without `includeInactive` — so a trap whose
+  terminal component is disabled is unreachable. BrutalCompanyMinusExtraReborn disables exactly
+  that on its grabbable turret, which is why such a turret ignored its code completely: it never
+  berserked, never switched off, and never reached this mod. The lookup is now extended additively,
+  so the vanilla path is untouched.
+- **An allied turret can no longer aim at players.** With no monster in sight it used to fall
+  through to the vanilla lookup, which points the turret at a player's head — it could not hurt
+  them, but it tracked and fired at them, which looked exactly like the turret turning on the crew.
+- **Re-entering a code no longer undoes a hijack.** A trap that is already yours stays yours
+  instead of being sent berserk or detonated.
+- **Trap commands are properly chance-based now.** `TurretAlwaysBerserk` and the new
+  `MineAlwaysDetonate` both default to `false`, so a code normally does the vanilla disable and
+  only an error roll sends a turret berserk or detonates a mine. Set either to `true` for the old
+  always-on behaviour.
+
 ## 1.3.3
 - **Modded turrets respond to terminal codes again** (DefendFacility's mini turret). The trap is
   now identified before anything else: vanilla declares `isBigDoor = true` by default, so a trap

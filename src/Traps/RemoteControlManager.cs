@@ -19,6 +19,13 @@ namespace LethalDoors.Traps
         {
             if (mine == null) return;
 
+            // Already ours: entering the code again must not blow up our own mine.
+            if (AlliedTraps.IsAllied(mine))
+            {
+                Plugin.Log.LogInfo("Remote mine is already hijacked — leaving it on our side.");
+                return;
+            }
+
             // Hijack takes priority: this mine flips to our side instead of blowing up now.
             if (AlliedTraps.RollAllied(mine))
             {
@@ -33,6 +40,15 @@ namespace LethalDoors.Traps
             float chance = Plugin.Config.MineErrorChance.Value;
             float roll = Random.value;
             bool error = roll < chance;
+
+            // With MineAlwaysDetonate = false the roll decides detonate-vs-disable, so the
+            // configured chance is what actually happens rather than a hidden extra.
+            if (!error && !Plugin.Config.MineAlwaysDetonate.Value)
+            {
+                Plugin.Log.LogInfo($"Remote mine: roll {roll:F3} >= {chance:F3} -> vanilla disable.");
+                GameCompat.DisableMineQuiet(mine);
+                return;
+            }
 
             if (!error && Plugin.Config.MineWarnBeforeDetonate.Value)
             {
@@ -102,6 +118,14 @@ namespace LethalDoors.Traps
         public static bool HandleTurret(Turret turret)
         {
             if (turret == null) return false;
+
+            // Already ours: entering the code again must not send our own turret berserk and
+            // must not drop the hijack.
+            if (AlliedTraps.IsAllied(turret))
+            {
+                Plugin.Log.LogInfo("Turret is already hijacked — leaving it on our side.");
+                return true;
+            }
 
             // Hijack takes priority over the berserk/disable outcome.
             if (AlliedTraps.RollAllied(turret))

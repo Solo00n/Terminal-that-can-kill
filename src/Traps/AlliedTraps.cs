@@ -8,11 +8,9 @@ namespace LethalDoors.Traps
     /// Hijacked traps: a trap can flip to the players side and start reacting to monsters
     /// instead of to players.
     ///
-    /// NETWORKING: the allied roll is DETERMINISTIC, not random per client. It is derived from
-    /// the synced level seed plus the trap NetworkObjectId, so every client independently
-    /// computes the same answer for the same trap — no custom RPC needed, and re-entering the
-    /// code cannot re-roll the result. This mirrors how the game itself seeds per-level
-    /// randomness (System.Random(randomMapSeed + ...)).
+    /// NETWORKING: the client that typed the code rolls, and then announces the result on a
+    /// vanilla RPC carrying a marker only this mod ever sends. Everyone else obeys that marker
+    /// and never rolls again, so clients cannot disagree — and no custom netcode is needed.
     /// </summary>
     internal static class AlliedTraps
     {

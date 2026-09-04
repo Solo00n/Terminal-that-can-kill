@@ -41,10 +41,21 @@ namespace LethalDoors.Patches
         [HarmonyPrefix]
         private static bool Prefix(Turret __instance)
         {
-            if (!AlliedTraps.TryGetAimTarget(__instance, out var aim)) return true;
-            __instance.targetingDeadPlayer = false;
-            __instance.targetTransform = aim;
-            return false; // skip the vanilla player-body lookup
+            if (!AlliedTraps.IsAllied(__instance)) return true; // normal turret -> vanilla
+
+            if (AlliedTraps.TryGetAimTarget(__instance, out var aim))
+            {
+                __instance.targetingDeadPlayer = false;
+                __instance.targetTransform = aim;
+                return false;
+            }
+
+            // Allied but with no monster to shoot. Never fall through to the vanilla lookup: it
+            // would point targetTransform at a player's head and the turret would track and fire
+            // at them (harmless, thanks to the CheckForPlayersInLineOfSight patch, but it looks
+            // exactly like the turret turning on the crew). Drop the target instead.
+            __instance.targetPlayerWithRotation = null;
+            return false;
         }
     }
 
@@ -112,7 +123,10 @@ namespace LethalDoors.Patches
     [HarmonyPatch(typeof(Landmine), nameof(Landmine.ToggleMineEnabledLocalClient))]
     internal static class Landmine_AlliedSync_Patch
     {
-        private const float BlinkWindow = 0.6f;
+        // Our blink is a single frame, so the window only has to cover that. Keeping it tight
+        // matters: a plain disarm followed by the power coming back on would otherwise fall
+        // inside it and be misread as a hack.
+        private const float BlinkWindow = 0.2f;
         private static readonly System.Collections.Generic.Dictionary<Landmine, float> _offAt =
             new System.Collections.Generic.Dictionary<Landmine, float>();
 

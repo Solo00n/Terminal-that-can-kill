@@ -164,10 +164,17 @@ namespace LethalDoors
         }
 
         /// <summary>
-        /// Vanilla "deactivate mine". Goes through ToggleMineServerRpc, so it reaches every
-        /// client, and it flips the flag the game itself checks before detonating on a player.
-        /// Detonate() does NOT check that flag, so we can still set the mine off on monsters.
+        /// Plain vanilla mine disarm — no hijack blink, so it is never read as a hack.
+        /// Goes through ToggleMineServerRpc, so it reaches every client and flips the flag the
+        /// game itself checks before setting a mine off under a player.
         /// </summary>
+        public static void DisableMineQuiet(Landmine mine)
+        {
+            if (mine == null) return;
+            try { mine.ToggleMine(false); }
+            catch (Exception e) { Plugin.Log.LogError($"DisableMineQuiet failed: {e}"); }
+        }
+
         public static void BroadcastHijack(Landmine mine)
         {
             if (mine == null || Plugin.Instance == null) return;

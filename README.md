@@ -4,7 +4,7 @@
 
 ![Lethal Company](https://img.shields.io/badge/Lethal%20Company-V81-cc0000?style=flat-square)
 ![BepInEx](https://img.shields.io/badge/BepInEx-5.4.21%2B-cc0000?style=flat-square)
-![Version](https://img.shields.io/badge/version-1.3.3-cc0000?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.3.4-cc0000?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-cc0000?style=flat-square)
 
 **Language / Язык:** [English](#english) · [Русский](#russian)
@@ -71,8 +71,8 @@ File: <code>BepInEx/config/Solon.TerminalThatCanKill.cfg</code> (created on firs
 <tr><td><code>SafeZoneSeconds</code></td><td><code>5</code></td><td>Grace period after landing during which doors do not kill.</td></tr>
 <tr><td><code>DamageMode</code></td><td><code>InstantKill</code></td><td><code>InstantKill</code> or <code>DamageOverTime</code>.</td></tr>
 <tr><td><code>EnableRemoteControl</code></td><td><code>true</code></td><td>Detonate/rampage traps instead of disabling them.</td></tr>
-<tr><td><code>MineErrorChance</code></td><td><code>0.15</code></td><td>Chance a mine command misfires into a chain blast.</td></tr>
-<tr><td><code>TurretErrorChance</code></td><td><code>0.15</code></td><td>Chance a turret command misfires into a sustained rampage.</td></tr>
+<tr><td><code>MineErrorChance</code></td><td><code>0.15</code></td><td>Chance a mine command detonates the mine instead of disarming it.</td></tr>
+<tr><td><code>TurretErrorChance</code></td><td><code>0.15</code></td><td>Chance a turret command sends it berserk instead of disabling it.</td></tr>
 <tr><td><code>TurretFlipOnBerserkExit</code></td><td><code>true</code></td><td>Turret head turns 180° after leaving berserk.</td></tr>
 <tr><td><code>EnableAlliedTraps</code></td><td><code>true</code></td><td>Allow a trap command to hijack the trap to your side.</td></tr>
 <tr><td><code>AlliedChance</code></td><td><code>0.25</code></td><td>Chance a trap command hijacks the trap instead. Rolled per command.</td></tr>
@@ -164,8 +164,8 @@ Output: <code>bin/Release/Solon.TerminalThatCanKill.dll</code>. Game assemblies 
 <tr><td><code>SafeZoneSeconds</code></td><td><code>5</code></td><td>Безопасный период после посадки, пока двери не убивают.</td></tr>
 <tr><td><code>DamageMode</code></td><td><code>InstantKill</code></td><td><code>InstantKill</code> или <code>DamageOverTime</code>.</td></tr>
 <tr><td><code>EnableRemoteControl</code></td><td><code>true</code></td><td>Детонация/раж ловушек вместо отключения.</td></tr>
-<tr><td><code>MineErrorChance</code></td><td><code>0.15</code></td><td>Шанс сбоя команды мины (цепной взрыв).</td></tr>
-<tr><td><code>TurretErrorChance</code></td><td><code>0.15</code></td><td>Шанс сбоя команды турели (продлённый раж).</td></tr>
+<tr><td><code>MineErrorChance</code></td><td><code>0.15</code></td><td>Шанс, что команда подорвёт мину, а не обезвредит её.</td></tr>
+<tr><td><code>TurretErrorChance</code></td><td><code>0.15</code></td><td>Шанс, что команда отправит турель в берсерк, а не выключит её.</td></tr>
 <tr><td><code>TurretFlipOnBerserkExit</code></td><td><code>true</code></td><td>Разворот головы турели на 180° после берсерка.</td></tr>
 <tr><td><code>EnableAlliedTraps</code></td><td><code>true</code></td><td>Разрешить захват ловушки на свою сторону.</td></tr>
 <tr><td><code>AlliedChance</code></td><td><code>0.25</code></td><td>Шанс, что команда захватит ловушку. Бросается на каждую команду.</td></tr>

@@ -48,6 +48,7 @@ namespace LethalDoors
         public readonly ConfigEntry<float> MineErrorDamageMultiplier;
         public readonly ConfigEntry<float> TurretRampageDuration;
         public readonly ConfigEntry<bool> TurretAlwaysBerserk;
+        public readonly ConfigEntry<bool> MineAlwaysDetonate;
         public readonly ConfigEntry<bool> TurretFlipOnBerserkExit;
         public readonly ConfigEntry<float> TurretFlipSmoothDuration;
 
@@ -143,9 +144,14 @@ namespace LethalDoors
                     "chance decide berserk-vs-disable outright.",
                     new AcceptableValueRange<float>(0f, 1f)));
 
-            TurretAlwaysBerserk = cfg.Bind("RemoteControl", "TurretAlwaysBerserk", true,
-                "true  = every turret code sends the turret berserk; TurretErrorChance then only adds an extended rampage. " +
-                "false = a turret code disables the turret as in vanilla, and only a TurretErrorChance roll sends it berserk.");
+            TurretAlwaysBerserk = cfg.Bind("RemoteControl", "TurretAlwaysBerserk", false,
+                "false (default) = a turret code disables the turret as in vanilla, and only a TurretErrorChance roll " +
+                "sends it berserk — so the configured chance is what you actually see. " +
+                "true = every turret code sends it berserk and the chance only adds an extended rampage.");
+
+            MineAlwaysDetonate = cfg.Bind("RemoteControl", "MineAlwaysDetonate", false,
+                "false (default) = a mine code disarms the mine as in vanilla, and only a MineErrorChance roll " +
+                "detonates it. true = every mine code detonates it and the chance only adds the chain reaction.");
 
             MineErrorDamageMultiplier = cfg.Bind("RemoteControl", "MineErrorDamageMultiplier", 2.0f,
                 new ConfigDescription("On a mine error the blast is amplified: nearby mines within MineErrorChainRadius * this factor also detonate.",
