@@ -96,6 +96,18 @@ namespace LethalDoors.Traps
             TrapVisuals.ApplyAllied(turret);
         }
 
+        /// <summary>
+        /// Register a trap that is allied by its nature rather than by a hack: it never expires,
+        /// whatever AlliedDuration says, and it is not announced with the hack cue. The tint is
+        /// left to the caller, which may have to wait for another mod to finish dressing the trap.
+        /// </summary>
+        public static void MakeAlliedPermanently(Turret turret)
+        {
+            if (turret == null) return;
+            if (!_turrets.TryGetValue(turret, out var s)) { s = new TurretState(); _turrets[turret] = s; }
+            s.Until = float.MaxValue;
+        }
+
         public static void MakeAllied(Landmine mine)
         {
             if (mine == null) return;

@@ -33,7 +33,7 @@ The ship and facility doors slam shut on anyone in the doorway, and the terminal
 - Ship door: detected via <code>doorPower &lt; 1</code> plus the <code>ShipDoorClose</code> animator state; the doorway is at a fixed world position (the ship never moves).
 - Facility doors: detected on the <code>SetDoorOpen</code> open→closed transition and processed frame by frame.
 - Traps use the vanilla synced RPCs (<code>ExplodeMineServerRpc</code>, <code>EnterBerserkModeServerRpc</code>) — no custom network objects.
-- Trap power is never forced, so power mods such as <strong style="color: #cc0000;">DefendFacility</strong> stay in charge of whether a trap is on; this mod only changes who it targets.
+- Trap power is never forced, so power mods such as <strong style="color: #cc0000;">DefendFacility</strong> stay in charge of whether a trap is on; this mod only changes who it targets. Its mini turret is treated as the crew's own and is allied from the start.
 
 ### <span style="color: #cc0000;">MULTIPLAYER (HOST-AUTHORITATIVE)</span>
 
@@ -77,6 +77,7 @@ File: <code>BepInEx/config/Solon.TerminalThatCanKill.cfg</code> (created on firs
 <tr><td><code>EnableAlliedTraps</code></td><td><code>true</code></td><td>Allow a trap command to hijack the trap to your side.</td></tr>
 <tr><td><code>AlliedChance</code></td><td><code>0.25</code></td><td>Chance a trap command hijacks the trap instead. Rolled per command.</td></tr>
 <tr><td><code>AlliedDuration</code></td><td><code>0</code></td><td>Seconds a hijacked trap stays allied. 0 = permanent.</td></tr>
+<tr><td><code>MiniTurretAlwaysAllied</code></td><td><code>true</code></td><td>DefendFacility's mini turret is allied from the start and never needs hacking.</td></tr>
 <tr><td><code>VerboseLogging</code></td><td><code>false</code></td><td>Per-event diagnostics in the log, including the offset used to tune the kill zone.</td></tr>
 </table>
 
@@ -128,7 +129,7 @@ Output: <code>bin/Release/Solon.TerminalThatCanKill.dll</code>. Game assemblies 
 - Дверь корабля: определяется по <code>doorPower &lt; 1</code> плюс состоянию аниматора <code>ShipDoorClose</code>; проём в фиксированной точке мира (корабль не двигается).
 - Двери комплекса: ловятся на переходе <code>SetDoorOpen</code> открыта→закрыта и обрабатываются покадрово.
 - Ловушки используют ванильные синхронизированные RPC (<code>ExplodeMineServerRpc</code>, <code>EnterBerserkModeServerRpc</code>) — без своих сетевых объектов.
-- Питание ловушек мод не трогает, поэтому моды питания вроде <strong style="color: #cc0000;">DefendFacility</strong> остаются главными в вопросе «включена ли ловушка»; этот мод меняет только цель.
+- Питание ловушек мод не трогает, поэтому моды питания вроде <strong style="color: #cc0000;">DefendFacility</strong> остаются главными в вопросе «включена ли ловушка»; этот мод меняет только цель. Её мини-турель считается своей и союзна с самого начала.
 
 ### <span style="color: #cc0000;">МУЛЬТИПЛЕЕР (HOST-AUTHORITATIVE)</span>
 
@@ -172,6 +173,7 @@ Output: <code>bin/Release/Solon.TerminalThatCanKill.dll</code>. Game assemblies 
 <tr><td><code>EnableAlliedTraps</code></td><td><code>true</code></td><td>Разрешить захват ловушки на свою сторону.</td></tr>
 <tr><td><code>AlliedChance</code></td><td><code>0.25</code></td><td>Шанс, что команда захватит ловушку. Бросается на каждую команду.</td></tr>
 <tr><td><code>AlliedDuration</code></td><td><code>0</code></td><td>Сколько секунд ловушка союзная. 0 = навсегда.</td></tr>
+<tr><td><code>MiniTurretAlwaysAllied</code></td><td><code>true</code></td><td>Мини-турель DefendFacility союзная сразу и не требует взлома.</td></tr>
 <tr><td><code>VerboseLogging</code></td><td><code>false</code></td><td>Подробные логи, включая смещение для настройки зоны убийства.</td></tr>
 </table>
 

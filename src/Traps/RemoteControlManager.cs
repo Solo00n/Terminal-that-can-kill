@@ -123,6 +123,10 @@ namespace LethalDoors.Traps
             // must not drop the hijack.
             if (AlliedTraps.IsAllied(turret))
             {
+                // A mini turret is ours by nature rather than by a hack, so there is nothing for
+                // the code to undo — let it do its ordinary job of switching the turret off.
+                if (Patches.MiniTurretCompat.IsMiniTurret(turret)) return false;
+
                 Plugin.Log.LogInfo("Turret is already hijacked — leaving it on our side.");
                 return true;
             }

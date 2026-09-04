@@ -63,6 +63,7 @@ namespace LethalDoors
         public readonly ConfigEntry<float> AlliedMineTriggerRadius;
         public readonly ConfigEntry<bool> AlliedHackSound;
         public readonly ConfigEntry<bool> AlliedTint;
+        public readonly ConfigEntry<bool> MiniTurretAlwaysAllied;
 
         // ---- [RemoteControl.Advanced] ---------------------------------------
         public readonly ConfigEntry<float> MineErrorChainRadius;
@@ -210,6 +211,11 @@ namespace LethalDoors
 
             AlliedTint = cfg.Bind("AlliedTraps", "AlliedTint", true,
                 "Recolour a hijacked trap green (turret laser, mine indicator) so you can tell it is on your side.");
+
+            MiniTurretAlwaysAllied = cfg.Bind("AlliedTraps", "MiniTurretAlwaysAllied", true,
+                "DefendFacility's mini turret is allied the moment it exists — the crew bought and carried it in, " +
+                "so it never has to be hacked and never turns on you. Its friendliness does not expire. " +
+                "Ignored when DefendFacility is not installed.");
 
             // ---------------------------------------------------------------- RemoteControl.Advanced
             MineErrorChainRadius = cfg.Bind("RemoteControl.Advanced", "MineErrorChainRadius", 8.0f,

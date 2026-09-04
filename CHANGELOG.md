@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.5.0
+- **DefendFacility's mini turret is always on your side.** The crew buys it and carries it in, so
+  treating it as facility hardware to be hacked never made sense: it is allied from the moment it
+  exists, it never has to be hacked, and its friendliness does not expire whatever `AlliedDuration`
+  says. Every client works this out on its own from the turret itself, so nothing has to be synced.
+  Its terminal code still switches it off exactly as before — there is no hijack for the code to
+  undo, so it is left to do its ordinary job.
+  Turn it off with `[AlliedTraps] MiniTurretAlwaysAllied = false` to treat it like any other turret.
+- **Fixed: the Fair AI and DefendFacility integrations could silently do nothing.** Both are wired
+  up by reflection when the mod starts, which finds nothing if BepInEx has not loaded the other mod
+  yet — and load order was left to chance. They are now declared as soft dependencies, which is
+  what actually orders them; neither is required and nothing changes without them.
+
 ## 1.4.1
 Performance pass. No behaviour changes — the mod does the same things, it just stops paying for
 them every frame.

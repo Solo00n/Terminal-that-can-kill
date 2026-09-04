@@ -22,6 +22,7 @@ namespace LethalDoors.Patches
             TaoTrapLookup.Clear();
             TurretHeadFlipPatch.ClearStates();
             Traps.AlliedTraps.Clear();
+            MiniTurretCompat.RegisterExisting(); // a mini turret carried over is still ours
             Landmine_AlliedSync_Patch.Clear();
         }
     }

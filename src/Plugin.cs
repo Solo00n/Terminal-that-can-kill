@@ -13,11 +13,19 @@ namespace LethalDoors
     /// doubles as our coroutine host (used by the door / trap managers).
     /// </summary>
     [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
+    // Soft dependencies only affect load order, and that is exactly what we need: both mods are
+    // wired up by reflection in Awake, which finds nothing at all if BepInEx has not loaded them
+    // yet. Neither is required, and the mod runs unchanged without them.
+    [BepInDependency(FairAiGuid, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(DefendFacilityGuid, BepInDependency.DependencyFlags.SoftDependency)]
     public sealed class Plugin : BaseUnityPlugin
     {
         public const string PluginGuid = "Solon.TerminalThatCanKill";
         public const string PluginName = "Terminal that can kill";
-        public const string PluginVersion = "1.4.1";
+        public const string PluginVersion = "1.5.0";
+
+        internal const string FairAiGuid = "GoldenKitten.FairAI";
+        internal const string DefendFacilityGuid = "com.yourname.defendfacility";
 
         public static Plugin Instance { get; private set; }
         public static ManualLogSource Log { get; private set; }
@@ -43,7 +51,8 @@ namespace LethalDoors
             try
             {
                 _harmony.PatchAll(typeof(Plugin).Assembly);
-                Patches.FairAiCompat.TryPatch(_harmony); // no-op unless Fair AI is installed
+                Patches.FairAiCompat.TryPatch(_harmony);   // no-op unless Fair AI is installed
+                Patches.MiniTurretCompat.Init();           // no-op unless DefendFacility is installed
                 Log.LogInfo($"{PluginName} v{PluginVersion} loaded — Harmony patches applied.");
             }
             catch (Exception e)

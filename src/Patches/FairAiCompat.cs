@@ -25,7 +25,7 @@ namespace LethalDoors.Patches
     /// </summary>
     internal static class FairAiCompat
     {
-        private const string PluginGuid = "GoldenKitten.FairAI";
+        private const string PluginGuid = Plugin.FairAiGuid;
 
         /// <summary>True when Fair AI owns the turret AI; our own aiming must then stand down.</summary>
         public static bool Active { get; private set; }
